@@ -1,4 +1,59 @@
 
+scalar Date
+
 type Query {
-  hello: String
+  books: [Book!]
+  authors: [Author!]
+  publications: [Publication!]
+  users: [User!]
+  students: [User!]
+  faculty: [User!]
+  libraryStaff: [User!]
+}
+
+type IssueInfo {
+  issuedBy: User!
+  returnDate: Date!
+}
+
+type Book {
+  id: String!
+  metadata: BookMetadata!
+  rackLocation: String!
+  issueInfo: IssueInfo
+}
+
+type BookMetadata {
+  id: String!
+  name: String!
+  authors: [Author!]
+  publication: Publication!
+}
+
+type Author {
+  id: String!
+  name: String!
+  books: [BookMetadata!]
+}
+
+type Publication {
+  id: String!
+  name: String!
+  books: [BookMetadata!]
+}
+
+enum UserType {
+  STUDENT,
+  FACULTY,
+  LIBRARY_STAFF,
+}
+
+type User {
+  id: String!
+  user_type: UserType!
+  name: String!
+  email: String!
+  phone: String!
+  prn: String!
+  pendingFine: Float!
 }

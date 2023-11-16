@@ -1,11 +1,12 @@
 
 import http from 'http';
-import dotenv from 'dotenv'
+import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
+import mongoose from 'mongoose';
 
 import { typeDefs } from './schema.js';
 import { resolvers } from './resolvers.js';
@@ -13,6 +14,9 @@ import { APIContext, getAPIContext } from './context.js';
 
 dotenv.config();
 const PORT = process.env.GRANTHPAL_PORT;
+const MONGODB_URI = process.env.GRANTHPAL_MONGODB_URI;
+
+await mongoose.connect(MONGODB_URI);
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -34,4 +38,4 @@ app.use(
 );
 
 await new Promise<void>(resolve => httpServer.listen({ port: PORT }, resolve));
-console.log(`Listenin on port: ${PORT}`);
+console.log(`Listening on port: ${PORT}`);
