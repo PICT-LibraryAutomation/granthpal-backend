@@ -1,15 +1,12 @@
 
 import { Schema, model } from 'mongoose';
 
-export interface IIssueInfo {
-  issuedBy: string
-  returnDate: number
-}
-
 export interface IBook {
   metadata: string
   rackLocation: string
-  issueInfo: IIssueInfo | null
+  issuedBy: string | null
+  issueDate: number | null
+  returnDate: number | null
 }
 
 export const BookSchema = new Schema<IBook>({
@@ -21,8 +18,16 @@ export const BookSchema = new Schema<IBook>({
     type: String,
     required: true,
   },
-  issueInfo: {
-    type: Object,
+  issuedBy: {
+    type: String,
+    default: null,
+  },
+  issueDate: {
+    type: Number,
+    default: null,
+  },
+  returnDate: {
+    type: Number,
     default: null,
   },
 });

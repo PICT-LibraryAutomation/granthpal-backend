@@ -1,26 +1,28 @@
 
 scalar Date
 
+# ====================================================================
+
 type Query {
   books: [Book!]
   authors: [Author!]
   publications: [Publication!]
+  
   users: [User!]
   students: [User!]
   faculty: [User!]
   libraryStaff: [User!]
 }
 
-type IssueInfo {
-  issuedBy: User!
-  returnDate: Date!
-}
+# ====================================================================
 
 type Book {
   id: String!
   metadata: BookMetadata!
   rackLocation: String!
-  issueInfo: IssueInfo
+  issuedBy: User
+  issueDate: Date
+  returnDate: Date
 }
 
 type BookMetadata {
@@ -30,17 +32,23 @@ type BookMetadata {
   publication: Publication!
 }
 
+# ====================================================================
+
 type Author {
   id: String!
   name: String!
   books: [BookMetadata!]
 }
 
+# ====================================================================
+
 type Publication {
   id: String!
   name: String!
   books: [BookMetadata!]
 }
+
+# ====================================================================
 
 enum UserType {
   STUDENT,
@@ -56,4 +64,5 @@ type User {
   phone: String!
   prn: String!
   pendingFine: Float!
+  issuedBook: Book
 }

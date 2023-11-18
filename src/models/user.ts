@@ -35,7 +35,7 @@ export const UserSchema = new Schema<IUser>({
   pendingFine: {
     type: Number,
     default: 0,
-  }
+  },
 });
 
 export const UserModel = model('User', UserSchema, 'users');

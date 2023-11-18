@@ -1,4 +1,5 @@
 
+import { readFileSync } from 'fs';
 import http from 'http';
 import dotenv from 'dotenv';
 import express from 'express';
@@ -8,7 +9,6 @@ import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
 import mongoose from 'mongoose';
 
-import { typeDefs } from './schema.js';
 import { resolvers } from './resolvers.js';
 import { APIContext, getAPIContext } from './context.js';
 
@@ -21,6 +21,7 @@ await mongoose.connect(MONGODB_URI);
 const app = express();
 const httpServer = http.createServer(app);
 
+const typeDefs = readFileSync('schema.gql').toString();
 const server = new ApolloServer<APIContext>({
   typeDefs,
   resolvers,
