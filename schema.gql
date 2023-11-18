@@ -58,7 +58,7 @@ enum UserType {
 
 type User {
   id: String!
-  user_type: UserType!
+  userType: UserType!
   name: String!
   email: String!
   phone: String!

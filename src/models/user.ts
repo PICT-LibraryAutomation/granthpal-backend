@@ -1,9 +1,8 @@
 
 import { Schema, model } from 'mongoose';
-import { UserType } from 'granthpal-common';
 
 export interface IUser {
-  user_type: string
+  userType: string
   name: string
   email: string
   phone: string
@@ -12,9 +11,9 @@ export interface IUser {
 }
 
 export const UserSchema = new Schema<IUser>({
-  user_type: {
-    type: UserType,
-    default: UserType.STUDENT,
+  userType: {
+    type: String,
+    required: true,
   },
   name: {
     type: String,

@@ -13,6 +13,7 @@ export const getUsers = async filter => {
     phone: user.phone,
     prn: user.prn,
     pendingFine: user.pendingFine,
+    userType: user.userType,
     issuedBook: getBook.bind(this, { issuedBy: user.id }),
   }));
 };
@@ -26,6 +27,7 @@ export const getUser = async filter => {
     phone: user.phone,
     prn: user.prn,
     pendingFine: user.pendingFine,
+    userType: user.userType,
     issuedBook: getBook.bind(this, { issuedBy: user.id }),
   };
 };
