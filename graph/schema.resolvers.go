@@ -11,21 +11,101 @@ import (
 	"github.com/PICT-LibraryAutomation/granthpal/graph/model"
 )
 
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+// Books is the resolver for the books field.
+func (r *authorResolver) Books(ctx context.Context, obj *model.Author) ([]*model.Book, error) {
+	panic(fmt.Errorf("not implemented: Books - books"))
 }
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
+// IssueInfo is the resolver for the issueInfo field.
+func (r *bookResolver) IssueInfo(ctx context.Context, obj *model.Book) (*model.IssueInfo, error) {
+	panic(fmt.Errorf("not implemented: IssueInfo - issueInfo"))
 }
 
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+// Authors is the resolver for the authors field.
+func (r *bookMetadataResolver) Authors(ctx context.Context, obj *model.BookMetadata) ([]*model.Author, error) {
+	panic(fmt.Errorf("not implemented: Authors - authors"))
+}
+
+// Publication is the resolver for the publication field.
+func (r *bookMetadataResolver) Publication(ctx context.Context, obj *model.BookMetadata) (*model.Publication, error) {
+	panic(fmt.Errorf("not implemented: Publication - publication"))
+}
+
+// Book is the resolver for the book field.
+func (r *issueInfoResolver) Book(ctx context.Context, obj *model.IssueInfo) (*model.Book, error) {
+	panic(fmt.Errorf("not implemented: Book - book"))
+}
+
+// IssuedBy is the resolver for the issuedBy field.
+func (r *issueInfoResolver) IssuedBy(ctx context.Context, obj *model.IssueInfo) (*model.User, error) {
+	panic(fmt.Errorf("not implemented: IssuedBy - issuedBy"))
+}
+
+// Books is the resolver for the books field.
+func (r *publicationResolver) Books(ctx context.Context, obj *model.Publication) ([]*model.Book, error) {
+	panic(fmt.Errorf("not implemented: Books - books"))
+}
+
+// Users is the resolver for the users field.
+func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
+	panic(fmt.Errorf("not implemented: Users - users"))
+}
+
+// Books is the resolver for the books field.
+func (r *queryResolver) Books(ctx context.Context) ([]*model.Book, error) {
+	panic(fmt.Errorf("not implemented: Books - books"))
+}
+
+// BookMetas is the resolver for the bookMetas field.
+func (r *queryResolver) BookMetas(ctx context.Context) ([]*model.BookMetadata, error) {
+	panic(fmt.Errorf("not implemented: BookMetas - bookMetas"))
+}
+
+// Authors is the resolver for the authors field.
+func (r *queryResolver) Authors(ctx context.Context) ([]*model.Author, error) {
+	panic(fmt.Errorf("not implemented: Authors - authors"))
+}
+
+// Publications is the resolver for the publications field.
+func (r *queryResolver) Publications(ctx context.Context) ([]*model.Publication, error) {
+	panic(fmt.Errorf("not implemented: Publications - publications"))
+}
+
+// IssuedBooks is the resolver for the issuedBooks field.
+func (r *queryResolver) IssuedBooks(ctx context.Context) ([]*model.IssueInfo, error) {
+	panic(fmt.Errorf("not implemented: IssuedBooks - issuedBooks"))
+}
+
+// IssuedBooks is the resolver for the issuedBooks field.
+func (r *userResolver) IssuedBooks(ctx context.Context, obj *model.User) ([]*model.IssueInfo, error) {
+	panic(fmt.Errorf("not implemented: IssuedBooks - issuedBooks"))
+}
+
+// Author returns AuthorResolver implementation.
+func (r *Resolver) Author() AuthorResolver { return &authorResolver{r} }
+
+// Book returns BookResolver implementation.
+func (r *Resolver) Book() BookResolver { return &bookResolver{r} }
+
+// BookMetadata returns BookMetadataResolver implementation.
+func (r *Resolver) BookMetadata() BookMetadataResolver { return &bookMetadataResolver{r} }
+
+// IssueInfo returns IssueInfoResolver implementation.
+func (r *Resolver) IssueInfo() IssueInfoResolver { return &issueInfoResolver{r} }
+
+// Publication returns PublicationResolver implementation.
+func (r *Resolver) Publication() PublicationResolver { return &publicationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
-type mutationResolver struct{ *Resolver }
+// User returns UserResolver implementation.
+func (r *Resolver) User() UserResolver { return &userResolver{r} }
+
+type authorResolver struct{ *Resolver }
+type bookResolver struct{ *Resolver }
+type bookMetadataResolver struct{ *Resolver }
+type issueInfoResolver struct{ *Resolver }
+type publicationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type userResolver struct{ *Resolver }

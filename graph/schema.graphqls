@@ -1,28 +1,71 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
 
-type Todo {
-  id: ID!
-  text: String!
-  done: Boolean!
-  user: User!
+scalar Time
+
+directive @onlyLibraryStaff on FIELD_DEFINITION
+
+type Query {
+  users: [User!]!,
+  books: [Book!]!,
+  bookMetas: [BookMetadata!]!,
+  authors: [Author!]!,
+  publications: [Publication!]!,
+  issuedBooks: [IssueInfo!]! @onlyLibraryStaff,
 }
 
 type User {
-  id: ID!
-  name: String!
+  id: String!,
+  passwordHash: String!,
+  kind: UserKind!,
+  name: String!,
+  phone: String!,
+  prn: String!,
+
+  # Derived
+  issuedBooks: [IssueInfo!]!,
 }
 
-type Query {
-  todos: [Todo!]!
+enum UserKind {
+  STUDENT,
+  FACULTY,
+  LIBRARY_STAFF,
 }
 
-input NewTodo {
-  text: String!
-  userId: String!
+type Book {
+  id: String!,
+  meta: BookMetadata!,
+  issueInfo: IssueInfo, # Derived
 }
 
-type Mutation {
-  createTodo(input: NewTodo!): Todo!
+type BookMetadata {
+  id: String!,
+  name: String!,
+  abstract: String!,
+  authorIDs: [String!]!,
+  authors: [Author!]!, # Derived
+  publicationID: String!,
+  publication: Publication!, # Derived
+}
+
+type Author {
+  id: String!,
+  name: String!,
+  books: [Book!]!, # Derived
+}
+
+type Publication {
+  id: String!,
+  name: String!,
+  books: [Book!]!, # Derived
+}
+
+type IssueInfo {
+  id: String!,
+  bookID: String!,
+  book: Book!, # Derived
+  issuedByID: String!,
+  issuedBy: User!, # Derived
+  issueDate: Time!,
+  returnDate: Time!,
+  complete: Boolean!,
+  payment: Int!,
 }
