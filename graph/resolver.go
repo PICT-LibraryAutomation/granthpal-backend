@@ -1,9 +1,15 @@
 package graph
 
+import "github.com/PICT-LibraryAutomation/granthpal/database"
+
 //go:generate go run github.com/99designs/gqlgen generate
 
-// This file will not be regenerated automatically.
-//
-// It serves as dependency injection for your app, add any dependencies you require here.
+type Resolver struct {
+	db *database.Database
+}
 
-type Resolver struct{}
+func NewResolver(db *database.Database) *Resolver {
+	return &Resolver{
+		db: db,
+	}
+}

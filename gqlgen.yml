@@ -85,11 +85,15 @@ models:
     fields:
       issueInfo:
         resolver: true
+      metaID:
+        resolver: true
   BookMetadata:
     fields:
       authors:
         resolver: true
       publication:
+        resolver: true
+      books:
         resolver: true
   Author:
     fields:

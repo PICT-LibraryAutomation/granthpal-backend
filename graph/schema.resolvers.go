@@ -8,12 +8,20 @@ import (
 	"context"
 	"fmt"
 
+	dbModels "github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph/model"
+	"github.com/PICT-LibraryAutomation/granthpal/utils"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 // Books is the resolver for the books field.
 func (r *authorResolver) Books(ctx context.Context, obj *model.Author) ([]*model.Book, error) {
 	panic(fmt.Errorf("not implemented: Books - books"))
+}
+
+// MetaID is the resolver for the metaID field.
+func (r *bookResolver) MetaID(ctx context.Context, obj *model.Book) (string, error) {
+	panic(fmt.Errorf("not implemented: MetaID - metaID"))
 }
 
 // IssueInfo is the resolver for the issueInfo field.
@@ -29,6 +37,11 @@ func (r *bookMetadataResolver) Authors(ctx context.Context, obj *model.BookMetad
 // Publication is the resolver for the publication field.
 func (r *bookMetadataResolver) Publication(ctx context.Context, obj *model.BookMetadata) (*model.Publication, error) {
 	panic(fmt.Errorf("not implemented: Publication - publication"))
+}
+
+// Books is the resolver for the books field.
+func (r *bookMetadataResolver) Books(ctx context.Context, obj *model.BookMetadata) ([]*model.Book, error) {
+	panic(fmt.Errorf("not implemented: Books - books"))
 }
 
 // Book is the resolver for the book field.
@@ -48,27 +61,84 @@ func (r *publicationResolver) Books(ctx context.Context, obj *model.Publication)
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
+	users, err := dbModels.GetUsers(ctx, r.db, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.Map(users, func(user *dbModels.UserModel) *model.User {
+		return &model.User{
+			ID:           user.ID.Hex(),
+			PasswordHash: user.PasswordHash,
+			Kind:         user.Kind,
+			Name:         user.Name,
+			Phone:        user.Phone,
+			Prn:          user.PRN,
+		}
+	}), nil
 }
 
 // Books is the resolver for the books field.
 func (r *queryResolver) Books(ctx context.Context) ([]*model.Book, error) {
-	panic(fmt.Errorf("not implemented: Books - books"))
+	books, err := dbModels.GetBooks(ctx, r.db, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.Map(books, func(book *dbModels.BookModel) *model.Book {
+		return &model.Book{
+			ID:     book.ID.Hex(),
+			MetaID: book.MetaID,
+		}
+	}), nil
 }
 
 // BookMetas is the resolver for the bookMetas field.
 func (r *queryResolver) BookMetas(ctx context.Context) ([]*model.BookMetadata, error) {
-	panic(fmt.Errorf("not implemented: BookMetas - bookMetas"))
+	bookMetas, err := dbModels.GetBookMetas(ctx, r.db, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.Map(bookMetas, func(bookMeta *dbModels.BookMetadataModel) *model.BookMetadata {
+		return &model.BookMetadata{
+			ID:            bookMeta.ID.Hex(),
+			Name:          bookMeta.Name,
+			Abstract:      bookMeta.Abstract,
+			AuthorIDs:     bookMeta.AuthorIDs,
+			PublicationID: &bookMeta.PublicationID,
+		}
+	}), nil
 }
 
 // Authors is the resolver for the authors field.
 func (r *queryResolver) Authors(ctx context.Context) ([]*model.Author, error) {
-	panic(fmt.Errorf("not implemented: Authors - authors"))
+	authors, err := dbModels.GetAuthors(ctx, r.db, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.Map(authors, func(author *dbModels.AuthorModel) *model.Author {
+		return &model.Author{
+			ID:   author.ID.Hex(),
+			Name: author.Name,
+		}
+	}), nil
 }
 
 // Publications is the resolver for the publications field.
 func (r *queryResolver) Publications(ctx context.Context) ([]*model.Publication, error) {
-	panic(fmt.Errorf("not implemented: Publications - publications"))
+	publications, err := dbModels.GetPublications(ctx, r.db, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.Map(publications, func(publication *dbModels.PublicationModel) *model.Publication {
+		return &model.Publication{
+			ID:   publication.ID.Hex(),
+			Name: publication.Name,
+		}
+	}), nil
 }
 
 // IssuedBooks is the resolver for the issuedBooks field.

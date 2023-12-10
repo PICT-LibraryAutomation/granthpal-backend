@@ -64,12 +64,14 @@ type ComplexityRoot struct {
 		ID        func(childComplexity int) int
 		IssueInfo func(childComplexity int) int
 		Meta      func(childComplexity int) int
+		MetaID    func(childComplexity int) int
 	}
 
 	BookMetadata struct {
 		Abstract      func(childComplexity int) int
 		AuthorIDs     func(childComplexity int) int
 		Authors       func(childComplexity int) int
+		Books         func(childComplexity int) int
 		ID            func(childComplexity int) int
 		Name          func(childComplexity int) int
 		Publication   func(childComplexity int) int
@@ -118,12 +120,15 @@ type AuthorResolver interface {
 	Books(ctx context.Context, obj *model.Author) ([]*model.Book, error)
 }
 type BookResolver interface {
+	MetaID(ctx context.Context, obj *model.Book) (string, error)
+
 	IssueInfo(ctx context.Context, obj *model.Book) (*model.IssueInfo, error)
 }
 type BookMetadataResolver interface {
 	Authors(ctx context.Context, obj *model.BookMetadata) ([]*model.Author, error)
 
 	Publication(ctx context.Context, obj *model.BookMetadata) (*model.Publication, error)
+	Books(ctx context.Context, obj *model.BookMetadata) ([]*model.Book, error)
 }
 type IssueInfoResolver interface {
 	Book(ctx context.Context, obj *model.IssueInfo) (*model.Book, error)
@@ -206,6 +211,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Book.Meta(childComplexity), true
 
+	case "Book.metaID":
+		if e.complexity.Book.MetaID == nil {
+			break
+		}
+
+		return e.complexity.Book.MetaID(childComplexity), true
+
 	case "BookMetadata.abstract":
 		if e.complexity.BookMetadata.Abstract == nil {
 			break
@@ -226,6 +238,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.BookMetadata.Authors(childComplexity), true
+
+	case "BookMetadata.books":
+		if e.complexity.BookMetadata.Books == nil {
+			break
+		}
+
+		return e.complexity.BookMetadata.Books(childComplexity), true
 
 	case "BookMetadata.id":
 		if e.complexity.BookMetadata.ID == nil {
@@ -720,6 +739,8 @@ func (ec *executionContext) fieldContext_Author_books(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "metaID":
+				return ec.fieldContext_Book_metaID(ctx, field)
 			case "meta":
 				return ec.fieldContext_Book_meta(ctx, field)
 			case "issueInfo":
@@ -768,6 +789,50 @@ func (ec *executionContext) fieldContext_Book_id(ctx context.Context, field grap
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Book_metaID(ctx context.Context, field graphql.CollectedField, obj *model.Book) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Book_metaID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Book().MetaID(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Book_metaID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Book",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -828,6 +893,8 @@ func (ec *executionContext) fieldContext_Book_meta(ctx context.Context, field gr
 				return ec.fieldContext_BookMetadata_publicationID(ctx, field)
 			case "publication":
 				return ec.fieldContext_BookMetadata_publication(ctx, field)
+			case "books":
+				return ec.fieldContext_BookMetadata_books(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
 		},
@@ -1145,14 +1212,11 @@ func (ec *executionContext) _BookMetadata_publicationID(ctx context.Context, fie
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_BookMetadata_publicationID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1189,14 +1253,11 @@ func (ec *executionContext) _BookMetadata_publication(ctx context.Context, field
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.Publication)
 	fc.Result = res
-	return ec.marshalNPublication2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚋmodelᚐPublication(ctx, field.Selections, res)
+	return ec.marshalOPublication2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚋmodelᚐPublication(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_BookMetadata_publication(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1215,6 +1276,60 @@ func (ec *executionContext) fieldContext_BookMetadata_publication(ctx context.Co
 				return ec.fieldContext_Publication_books(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Publication", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookMetadata_books(ctx context.Context, field graphql.CollectedField, obj *model.BookMetadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookMetadata_books(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.BookMetadata().Books(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Book)
+	fc.Result = res
+	return ec.marshalNBook2ᚕᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚋmodelᚐBookᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookMetadata_books(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookMetadata",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Book_id(ctx, field)
+			case "metaID":
+				return ec.fieldContext_Book_metaID(ctx, field)
+			case "meta":
+				return ec.fieldContext_Book_meta(ctx, field)
+			case "issueInfo":
+				return ec.fieldContext_Book_issueInfo(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
 		},
 	}
 	return fc, nil
@@ -1349,6 +1464,8 @@ func (ec *executionContext) fieldContext_IssueInfo_book(ctx context.Context, fie
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "metaID":
+				return ec.fieldContext_Book_metaID(ctx, field)
 			case "meta":
 				return ec.fieldContext_Book_meta(ctx, field)
 			case "issueInfo":
@@ -1769,6 +1886,8 @@ func (ec *executionContext) fieldContext_Publication_books(ctx context.Context, 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "metaID":
+				return ec.fieldContext_Book_metaID(ctx, field)
 			case "meta":
 				return ec.fieldContext_Book_meta(ctx, field)
 			case "issueInfo":
@@ -1881,6 +2000,8 @@ func (ec *executionContext) fieldContext_Query_books(ctx context.Context, field 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Book_id(ctx, field)
+			case "metaID":
+				return ec.fieldContext_Book_metaID(ctx, field)
 			case "meta":
 				return ec.fieldContext_Book_meta(ctx, field)
 			case "issueInfo":
@@ -1945,6 +2066,8 @@ func (ec *executionContext) fieldContext_Query_bookMetas(ctx context.Context, fi
 				return ec.fieldContext_BookMetadata_publicationID(ctx, field)
 			case "publication":
 				return ec.fieldContext_BookMetadata_publication(ctx, field)
+			case "books":
+				return ec.fieldContext_BookMetadata_books(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
 		},
@@ -4474,6 +4597,42 @@ func (ec *executionContext) _Book(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "metaID":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Book_metaID(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "meta":
 			out.Values[i] = ec._Book_meta(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -4604,9 +4763,6 @@ func (ec *executionContext) _BookMetadata(ctx context.Context, sel ast.Selection
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "publicationID":
 			out.Values[i] = ec._BookMetadata_publicationID(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		case "publication":
 			field := field
 
@@ -4617,6 +4773,39 @@ func (ec *executionContext) _BookMetadata(ctx context.Context, sel ast.Selection
 					}
 				}()
 				res = ec._BookMetadata_publication(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "books":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._BookMetadata_books(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -5745,10 +5934,6 @@ func (ec *executionContext) marshalNIssueInfo2ᚖgithubᚗcomᚋPICTᚑLibraryAu
 	return ec._IssueInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNPublication2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚋmodelᚐPublication(ctx context.Context, sel ast.SelectionSet, v model.Publication) graphql.Marshaler {
-	return ec._Publication(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNPublication2ᚕᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚋmodelᚐPublicationᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Publication) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -6217,6 +6402,13 @@ func (ec *executionContext) marshalOIssueInfo2ᚖgithubᚗcomᚋPICTᚑLibraryAu
 		return graphql.Null
 	}
 	return ec._IssueInfo(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPublication2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚋmodelᚐPublication(ctx context.Context, sel ast.SelectionSet, v *model.Publication) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Publication(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

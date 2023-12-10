@@ -5,9 +5,11 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/PICT-LibraryAutomation/granthpal/database"
+	"github.com/PICT-LibraryAutomation/granthpal/graph"
 	"github.com/PICT-LibraryAutomation/granthpal/middleware"
-	"github.com/PICT-LibraryAutomation/granthpal/routes"
 	"github.com/go-chi/chi/v5"
 	chiMiddleware "github.com/go-chi/chi/v5/middleware"
 	"github.com/joho/godotenv"
@@ -35,7 +37,17 @@ func main() {
 	router := chi.NewRouter()
 	router.Use(chiMiddleware.Logger)
 	router.Use(middleware.DatabaseMiddleware(db))
-	routes.RegisterRoutes(router)
+
+	srv := handler.NewDefaultServer(
+		graph.NewExecutableSchema(
+			graph.Config{
+				Resolvers: graph.NewResolver(db),
+			},
+		),
+	)
+
+	router.Handle("/query", srv)
+	router.Handle("/sandbox", playground.ApolloSandboxHandler("Sandbox", "/query"))
 
 	log.Printf("Connect to http://localhost:%s/", port)
 	log.Fatal(http.ListenAndServe(":"+port, router))

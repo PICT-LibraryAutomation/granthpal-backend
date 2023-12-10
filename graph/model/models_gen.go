@@ -17,6 +17,7 @@ type Author struct {
 
 type Book struct {
 	ID        string        `json:"id"`
+	MetaID    string        `json:"metaID"`
 	Meta      *BookMetadata `json:"meta"`
 	IssueInfo *IssueInfo    `json:"issueInfo,omitempty"`
 }
@@ -27,8 +28,9 @@ type BookMetadata struct {
 	Abstract      string       `json:"abstract"`
 	AuthorIDs     []string     `json:"authorIDs"`
 	Authors       []*Author    `json:"authors"`
-	PublicationID string       `json:"publicationID"`
-	Publication   *Publication `json:"publication"`
+	PublicationID *string      `json:"publicationID,omitempty"`
+	Publication   *Publication `json:"publication,omitempty"`
+	Books         []*Book      `json:"books"`
 }
 
 type IssueInfo struct {

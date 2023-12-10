@@ -32,7 +32,8 @@ enum UserKind {
 
 type Book {
   id: String!,
-  meta: BookMetadata!,
+  metaID: String!,
+  meta: BookMetadata!, # Derived
   issueInfo: IssueInfo, # Derived
 }
 
@@ -42,8 +43,9 @@ type BookMetadata {
   abstract: String!,
   authorIDs: [String!]!,
   authors: [Author!]!, # Derived
-  publicationID: String!,
-  publication: Publication!, # Derived
+  publicationID: String,
+  publication: Publication, # Derived
+  books: [Book!]!, # Derived
 }
 
 type Author {

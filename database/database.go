@@ -18,7 +18,7 @@ func (db *Database) Close(ctx context.Context) {
 }
 
 func (db *Database) Collection(name string) *mongo.Collection {
-	return db.client.Database("rent").Collection(name)
+	return db.client.Database("granthpal").Collection(name)
 }
 
 func ConnectToDatabase() (*Database, error) {
