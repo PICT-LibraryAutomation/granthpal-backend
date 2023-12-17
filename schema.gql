@@ -1,0 +1,82 @@
+
+scalar Date
+
+type Query {
+  userByID(id: String!): User,
+  userByPRN(prn: String!): User,
+  users: [User!]!,
+  currentUser: User!,
+
+  book(id: String!): Book,
+  books: [Book!]!,
+
+  bookMeta(id: String!): BookMetadata,
+  bookMetas: [BookMetadata!]!,
+
+  author(id: String!): Author,
+  authors: [Author!]!,
+
+  publication(id: String!): Publication,
+  publications: [Publication!]!,
+
+  issuedInfo(id: String!): IssueInfo,
+  issuedInfos: [IssueInfo!]!,
+}
+
+type User {
+  id: String!,
+  prn: String!,
+  kind: UserKind!,
+  name: String!,
+  phone: String!,
+  issuing: [IssueInfo!]!,
+  allIssued: [IssueInfo!]!,
+}
+
+enum UserKind {
+  STUDENT,
+  FACULTY,
+  LIBRARY_STAFF,
+}
+
+type Book {
+  id: String!,
+  meta: BookMetadata!,
+  issueInfo: IssueInfo,
+}
+
+type BookMetadata {
+  id: String!,
+  name: String!,
+  abstract: String!,
+  authors: [Author!]!,
+  publication: Publication,
+  books: [Book!]!,
+}
+
+type Author {
+  id: String!,
+  name: String!,
+  books: [BookMetadata!]!,
+}
+
+type Publication {
+  id: String!,
+  name: String!,
+  books: [BookMetadata!]!,
+}
+
+type IssueInfo {
+  id: String!,
+  status: IssueStatus!,
+  book: Book!,
+  issuedBy: User!,
+  issueDate: Date!,
+  returnDate: Date!,
+  finePayment: Int!,
+}
+
+enum IssueStatus {
+  BORROWED,
+  RETURNED,
+}
