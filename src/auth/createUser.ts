@@ -1,14 +1,15 @@
 
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
-import { UserModel } from '../models/user.js';
-import { SessionModel } from '../models/session.js';
+import { UserModel } from '../remote/models/user.js';
+import { SessionModel } from '../remote/models/session.js';
+import { Errors } from '../errors.js';
 
 export async function createUser(req: Request, res: Response) {
   let sessionID = req.cookies['auth-session'];
   if (sessionID && sessionID != '') {
     res.status(400);
-    res.send('Already Authenticated. Please logout first.');
+    res.send(Errors.ALREADY_AUTHENTICATED);
     return;
   }
   sessionID = sessionID.trim();
@@ -19,7 +20,7 @@ export async function createUser(req: Request, res: Response) {
 
   if (!name || !phone || !password || name === '' || phone === '' || password === '') {
     res.status(400);
-    res.send('Invalid details provided');
+    res.send(Errors.INVALID_DETAILS_PROVIDED);
     return;
   }
 
@@ -30,7 +31,7 @@ export async function createUser(req: Request, res: Response) {
   let user = await UserModel.findOne({ phone });
   if (user != null) {
     res.status(400);
-    res.send('User with given phone number already exists');
+    res.send(Errors.INVALID_DETAILS_PROVIDED);
     return;
   }
 

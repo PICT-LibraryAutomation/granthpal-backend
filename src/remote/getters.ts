@@ -1,11 +1,11 @@
 import { APIContext } from '../context.js';
-import { UserModel } from '../models/user.js';
 import { IssueStatus } from '../generated/graphql.js';
-import { AuthorModel } from '../models/author.js';
-import { PublicationModel } from '../models/publication.js';
-import { BookModel } from '../models/book.js';
-import { BookMetadataModel } from '../models/bookMetadata.js';
-import { IssueInfoModel } from '../models/issueInfo.js';
+import { UserModel } from './models/user.js';
+import { AuthorModel } from './models/author.js';
+import { PublicationModel } from './models/publication.js';
+import { BookModel } from './models/book.js';
+import { BookMetadataModel } from './models/bookMetadata.js';
+import { IssueInfoModel } from './models/issueInfo.js';
 
 export const getUser = async (filter, ctx: APIContext) => {
   const user = await UserModel.findOne(filter);

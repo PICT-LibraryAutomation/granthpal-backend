@@ -1,7 +1,7 @@
 
 import { Request } from 'express';
-import { SessionModel } from '../models/session.js';
-import { UserModel } from '../models/user.js';
+import { SessionModel } from '../remote/models/session.js';
+import { UserModel } from '../remote/models/user.js';
 
 export interface IAuthUser {
   id: string,

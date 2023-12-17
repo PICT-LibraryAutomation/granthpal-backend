@@ -17,6 +17,10 @@ export type Scalars = {
   Date: { input: any; output: any; }
 };
 
+export type AddBookToInventoryInput = {
+  meta: Scalars['String']['input'];
+};
+
 export type Author = {
   __typename?: 'Author';
   books: Array<BookMetadata>;
@@ -41,6 +45,16 @@ export type BookMetadata = {
   publication?: Maybe<Publication>;
 };
 
+export type GranthpalSettings = {
+  __typename?: 'GranthpalSettings';
+  issuePeriod?: Maybe<Scalars['Int']['output']>;
+};
+
+export type IssueBookInput = {
+  bookID: Scalars['String']['input'];
+  prn: Scalars['String']['input'];
+};
+
 export type IssueInfo = {
   __typename?: 'IssueInfo';
   book: Book;
@@ -56,6 +70,46 @@ export enum IssueStatus {
   Borrowed = 'BORROWED',
   Returned = 'RETURNED'
 }
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  addBookToInventory: Book;
+  issueBook: IssueInfo;
+  registerBookMetadata: BookMetadata;
+  renewBook: IssueInfo;
+  returnBook: IssueInfo;
+  setIssuePeriod: GranthpalSettings;
+};
+
+
+export type MutationAddBookToInventoryArgs = {
+  inp: AddBookToInventoryInput;
+};
+
+
+export type MutationIssueBookArgs = {
+  inp: IssueBookInput;
+};
+
+
+export type MutationRegisterBookMetadataArgs = {
+  inp: RegisterBookMetadataInput;
+};
+
+
+export type MutationRenewBookArgs = {
+  inp: RenewBookInput;
+};
+
+
+export type MutationReturnBookArgs = {
+  inp: ReturnBookInput;
+};
+
+
+export type MutationSetIssuePeriodArgs = {
+  period: Scalars['Int']['input'];
+};
 
 export type Publication = {
   __typename?: 'Publication';
@@ -77,6 +131,7 @@ export type Query = {
   issuedInfos: Array<IssueInfo>;
   publication?: Maybe<Publication>;
   publications: Array<Publication>;
+  settings: GranthpalSettings;
   userByID?: Maybe<User>;
   userByPRN?: Maybe<User>;
   users: Array<User>;
@@ -114,6 +169,23 @@ export type QueryUserByIdArgs = {
 
 
 export type QueryUserByPrnArgs = {
+  prn: Scalars['String']['input'];
+};
+
+export type RegisterBookMetadataInput = {
+  abstract: Scalars['String']['input'];
+  authors?: InputMaybe<Array<Scalars['String']['input']>>;
+  name: Scalars['String']['input'];
+  publication: Scalars['String']['input'];
+};
+
+export type RenewBookInput = {
+  bookID: Scalars['String']['input'];
+  prn: Scalars['String']['input'];
+};
+
+export type ReturnBookInput = {
+  bookID: Scalars['String']['input'];
   prn: Scalars['String']['input'];
 };
 
@@ -205,16 +277,23 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  AddBookToInventoryInput: AddBookToInventoryInput;
   Author: ResolverTypeWrapper<Author>;
   Book: ResolverTypeWrapper<Book>;
   BookMetadata: ResolverTypeWrapper<BookMetadata>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Date: ResolverTypeWrapper<Scalars['Date']['output']>;
+  GranthpalSettings: ResolverTypeWrapper<GranthpalSettings>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  IssueBookInput: IssueBookInput;
   IssueInfo: ResolverTypeWrapper<IssueInfo>;
   IssueStatus: IssueStatus;
+  Mutation: ResolverTypeWrapper<{}>;
   Publication: ResolverTypeWrapper<Publication>;
   Query: ResolverTypeWrapper<{}>;
+  RegisterBookMetadataInput: RegisterBookMetadataInput;
+  RenewBookInput: RenewBookInput;
+  ReturnBookInput: ReturnBookInput;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   User: ResolverTypeWrapper<User>;
   UserKind: UserKind;
@@ -222,15 +301,22 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  AddBookToInventoryInput: AddBookToInventoryInput;
   Author: Author;
   Book: Book;
   BookMetadata: BookMetadata;
   Boolean: Scalars['Boolean']['output'];
   Date: Scalars['Date']['output'];
+  GranthpalSettings: GranthpalSettings;
   Int: Scalars['Int']['output'];
+  IssueBookInput: IssueBookInput;
   IssueInfo: IssueInfo;
+  Mutation: {};
   Publication: Publication;
   Query: {};
+  RegisterBookMetadataInput: RegisterBookMetadataInput;
+  RenewBookInput: RenewBookInput;
+  ReturnBookInput: ReturnBookInput;
   String: Scalars['String']['output'];
   User: User;
 };
@@ -263,6 +349,11 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
   name: 'Date';
 }
 
+export type GranthpalSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['GranthpalSettings'] = ResolversParentTypes['GranthpalSettings']> = {
+  issuePeriod?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type IssueInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['IssueInfo'] = ResolversParentTypes['IssueInfo']> = {
   book?: Resolver<ResolversTypes['Book'], ParentType, ContextType>;
   finePayment?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -272,6 +363,15 @@ export type IssueInfoResolvers<ContextType = any, ParentType extends ResolversPa
   returnDate?: Resolver<ResolversTypes['Date'], ParentType, ContextType>;
   status?: Resolver<ResolversTypes['IssueStatus'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  addBookToInventory?: Resolver<ResolversTypes['Book'], ParentType, ContextType, RequireFields<MutationAddBookToInventoryArgs, 'inp'>>;
+  issueBook?: Resolver<ResolversTypes['IssueInfo'], ParentType, ContextType, RequireFields<MutationIssueBookArgs, 'inp'>>;
+  registerBookMetadata?: Resolver<ResolversTypes['BookMetadata'], ParentType, ContextType, RequireFields<MutationRegisterBookMetadataArgs, 'inp'>>;
+  renewBook?: Resolver<ResolversTypes['IssueInfo'], ParentType, ContextType, RequireFields<MutationRenewBookArgs, 'inp'>>;
+  returnBook?: Resolver<ResolversTypes['IssueInfo'], ParentType, ContextType, RequireFields<MutationReturnBookArgs, 'inp'>>;
+  setIssuePeriod?: Resolver<ResolversTypes['GranthpalSettings'], ParentType, ContextType, RequireFields<MutationSetIssuePeriodArgs, 'period'>>;
 };
 
 export type PublicationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Publication'] = ResolversParentTypes['Publication']> = {
@@ -293,6 +393,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   issuedInfos?: Resolver<Array<ResolversTypes['IssueInfo']>, ParentType, ContextType>;
   publication?: Resolver<Maybe<ResolversTypes['Publication']>, ParentType, ContextType, RequireFields<QueryPublicationArgs, 'id'>>;
   publications?: Resolver<Array<ResolversTypes['Publication']>, ParentType, ContextType>;
+  settings?: Resolver<ResolversTypes['GranthpalSettings'], ParentType, ContextType>;
   userByID?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserByIdArgs, 'id'>>;
   userByPRN?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryUserByPrnArgs, 'prn'>>;
   users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType>;
@@ -314,7 +415,9 @@ export type Resolvers<ContextType = any> = {
   Book?: BookResolvers<ContextType>;
   BookMetadata?: BookMetadataResolvers<ContextType>;
   Date?: GraphQLScalarType;
+  GranthpalSettings?: GranthpalSettingsResolvers<ContextType>;
   IssueInfo?: IssueInfoResolvers<ContextType>;
+  Mutation?: MutationResolvers<ContextType>;
   Publication?: PublicationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   User?: UserResolvers<ContextType>;

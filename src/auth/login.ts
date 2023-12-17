@@ -1,14 +1,15 @@
 
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
-import { UserModel } from '../models/user.js';
-import { SessionModel } from '../models/session.js';
+import { UserModel } from '../remote/models/user.js';
+import { SessionModel } from '../remote/models/session.js';
+import { Errors } from '../errors.js';
 
 export async function login(req: Request, res: Response) {
   const sessionID = req.cookies['auth-session'];
   if (sessionID && sessionID != '') {
     res.status(400);
-    res.send('Already Authenticated. Please logout first.');
+    res.send(Errors.ALREADY_AUTHENTICATED);
     return;
   }
 
@@ -17,7 +18,7 @@ export async function login(req: Request, res: Response) {
 
   if (!phone || !password || phone === '' || password === '') {
     res.status(400);
-    res.send('Phone or password not provided');
+    res.send(Errors.INVALID_DETAILS_PROVIDED);
     return;
   }
 
@@ -27,13 +28,13 @@ export async function login(req: Request, res: Response) {
   const user = await UserModel.findOne({ phone });
   if (!user) {
     res.status(400);
-    res.send('User with given phone number doesn\'t exist');
+    res.send(Errors.INVALID_DETAILS_PROVIDED);
     return;
   }
 
   if (!bcrypt.compareSync(password, user.passwordHash)) {
     res.status(400);
-    res.send('Incorrect password provided');
+    res.send(Errors.INCORRECT_PASSWORD);
     return;
   }
 

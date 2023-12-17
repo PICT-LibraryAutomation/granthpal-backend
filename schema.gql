@@ -1,6 +1,8 @@
 
 scalar Date
 
+# =====================================================================================================================
+
 type Query {
   userByID(id: String!): User,
   userByPRN(prn: String!): User,
@@ -21,7 +23,24 @@ type Query {
 
   issuedInfo(id: String!): IssueInfo,
   issuedInfos: [IssueInfo!]!,
+
+  settings: GranthpalSettings!,
 }
+
+# =====================================================================================================================
+
+type Mutation {
+  issueBook(inp: IssueBookInput!): IssueInfo!,
+  renewBook(inp: RenewBookInput!): IssueInfo!,
+  returnBook(inp: ReturnBookInput!): IssueInfo!,
+
+  registerBookMetadata(inp: RegisterBookMetadataInput!): BookMetadata!,
+  addBookToInventory(inp: AddBookToInventoryInput!): Book!,
+
+  setIssuePeriod(period: Int!): GranthpalSettings!,
+}
+
+# =====================================================================================================================
 
 type User {
   id: String!,
@@ -39,11 +58,19 @@ enum UserKind {
   LIBRARY_STAFF,
 }
 
+# =====================================================================================================================
+
 type Book {
   id: String!,
   meta: BookMetadata!,
   issueInfo: IssueInfo,
 }
+
+input AddBookToInventoryInput {
+  meta: String!,
+}
+
+# =====================================================================================================================
 
 type BookMetadata {
   id: String!,
@@ -54,17 +81,30 @@ type BookMetadata {
   books: [Book!]!,
 }
 
+input RegisterBookMetadataInput {
+  name: String!,
+  abstract: String!,
+  authors: [String!],
+  publication: String!,
+}
+
+# =====================================================================================================================
+
 type Author {
   id: String!,
   name: String!,
   books: [BookMetadata!]!,
 }
 
+# =====================================================================================================================
+
 type Publication {
   id: String!,
   name: String!,
   books: [BookMetadata!]!,
 }
+
+# =====================================================================================================================
 
 type IssueInfo {
   id: String!,
@@ -79,4 +119,27 @@ type IssueInfo {
 enum IssueStatus {
   BORROWED,
   RETURNED,
+}
+
+input IssueBookInput {
+  prn: String!,
+  bookID: String!,
+  issuePeriod: Int,
+}
+
+input RenewBookInput {
+  prn: String!,
+  bookID: String!,
+  issuePeriod: Int,
+}
+
+input ReturnBookInput {
+  prn: String!,
+  bookID: String!,
+}
+
+# =====================================================================================================================
+
+type GranthpalSettings {
+  issuePeriod: Int,
 }

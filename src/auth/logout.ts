@@ -1,11 +1,13 @@
 
 import { Request, Response } from 'express';
-import { SessionModel } from '../models/session.js';
+import { SessionModel } from '../remote/models/session.js';
+import { Errors } from '../errors.js';
 
 export async function logout(req: Request, res: Response) {
   let sessionID = req.cookies['auth-session'];
   if (!sessionID) {
-    return;
+    res.status(400);
+    res.send(Errors.USER_UNAUTHENTICATED);
   }
 
   sessionID = sessionID.trim();
