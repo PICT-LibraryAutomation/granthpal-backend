@@ -141,5 +141,6 @@ input ReturnBookInput {
 # =====================================================================================================================
 
 type GranthpalSettings {
-  issuePeriod: Int,
+  issuePeriod: Int!,
+  fineAmount: Int!,
 }

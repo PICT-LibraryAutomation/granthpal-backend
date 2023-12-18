@@ -2,11 +2,16 @@ import { Schema, model } from 'mongoose';
 
 export interface ISession {
   uid: string,
+  prn: string,
   loggedIn: Date,
 }
 
 const SessionSchema = new Schema<ISession>({
   uid: {
+    type: String,
+    required: true,
+  },
+  prn: {
     type: String,
     required: true,
   },

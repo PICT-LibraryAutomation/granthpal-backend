@@ -1,4 +1,5 @@
 
+import moment from 'moment';
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { UserModel } from '../remote/models/user.js';
@@ -13,19 +14,19 @@ export async function login(req: Request, res: Response) {
     return;
   }
 
-  let phone: string = req.body.phone;
+  let prn: string = req.body.prn;
   let password: string = req.body.password;
 
-  if (!phone || !password || phone === '' || password === '') {
+  if (!prn || !password || prn === '' || password === '') {
     res.status(400);
     res.send(Errors.INVALID_DETAILS_PROVIDED);
     return;
   }
 
-  phone = phone.trim();
+  prn = prn.trim();
   password = password.trim();
 
-  const user = await UserModel.findOne({ phone });
+  const user = await UserModel.findOne({ prn });
   if (!user) {
     res.status(400);
     res.send(Errors.INVALID_DETAILS_PROVIDED);
@@ -40,7 +41,8 @@ export async function login(req: Request, res: Response) {
 
   const sessionDoc = new SessionModel({
     uid: user.id,
-    loggedIn: Date.now(),
+    prn: user.prn,
+    loggedIn: moment().toDate(),
   });
   const session = await sessionDoc.save();
 

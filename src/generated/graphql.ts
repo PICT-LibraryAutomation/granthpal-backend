@@ -47,7 +47,8 @@ export type BookMetadata = {
 
 export type GranthpalSettings = {
   __typename?: 'GranthpalSettings';
-  issuePeriod?: Maybe<Scalars['Int']['output']>;
+  fineAmount: Scalars['Int']['output'];
+  issuePeriod: Scalars['Int']['output'];
 };
 
 export type IssueBookInput = {
@@ -352,7 +353,8 @@ export interface DateScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 }
 
 export type GranthpalSettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['GranthpalSettings'] = ResolversParentTypes['GranthpalSettings']> = {
-  issuePeriod?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  fineAmount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  issuePeriod?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

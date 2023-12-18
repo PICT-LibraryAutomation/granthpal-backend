@@ -1,4 +1,5 @@
 
+import moment from 'moment';
 import bcrypt from 'bcrypt';
 import { Request, Response } from 'express';
 import { UserModel } from '../remote/models/user.js';
@@ -49,7 +50,8 @@ export async function createUser(req: Request, res: Response) {
 
   const sessionDoc = new SessionModel({
     uid: user.id,
-    loggedIn: Date.now(),   
+    prn: user.prn,
+    loggedIn: moment().toDate(),
   });
   const session = await sessionDoc.save();
 
