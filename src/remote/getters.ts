@@ -15,8 +15,8 @@ export const getUser = async (filter, ctx: APIContext) => {
     kind: user.kind,
     name: user.name,
     phone: user.phone,
-    issuing: getIssueInfos.bind(this, { issuedBy: user.id, status: IssueStatus.Borrowed }),
-    allIssued: getIssueInfos.bind(this, { issuedBy: user.id }),
+    issuing: getIssueInfos.bind(this, { issuedBy: user.prn, status: IssueStatus.Borrowed }),
+    allIssued: getIssueInfos.bind(this, { issuedBy: user.prn }),
   };
 };
 
@@ -28,8 +28,8 @@ export const getUsers = async (filter, ctx: APIContext) => {
     kind: user.kind,
     name: user.name,
     phone: user.phone,
-    issuing: getIssueInfos.bind(this, { issuedBy: user.id, status: IssueStatus.Borrowed }),
-    allIssued: getIssueInfos.bind(this, { issuedBy: user.id }),
+    issuing: getIssueInfos.bind(this, { issuedBy: user.prn, status: IssueStatus.Borrowed }),
+    allIssued: getIssueInfos.bind(this, { issuedBy: user.prn }),
   }));
 };
 
@@ -74,7 +74,7 @@ export const getBook = async (filter, ctx: APIContext) => {
   return !book ? null : {
     id: book.id,
     meta: getBookMeta.bind(this, { _id: book.id }),
-    issueInfo: book.issueInfo ? getIssueInfo.bind(this, { _id: book.issueInfo }) : null,
+    issueInfo: getIssueInfo.bind(this, { book: book.id, status: IssueStatus.Borrowed }),
   };
 }
 
@@ -83,7 +83,7 @@ export const getBooks = async (filter, ctx: APIContext) => {
   return books.length === 0 ? [] : books.map(book => ({
     id: book.id,
     meta: getBookMeta.bind(this, { _id: book.id }),
-    issueInfo: book.issueInfo ? getIssueInfo.bind(this, { _id: book.issueInfo }) : null,
+    issueInfo: getIssueInfo.bind(this, { book: book.id, status: IssueStatus.Borrowed }),
   }));
 }
 
@@ -119,7 +119,7 @@ export const getIssueInfo = async (filter, ctx: APIContext) => {
     issueDate: issueInfo.issueDate,
     returnDate: issueInfo.returnDate,
     finePayment: issueInfo.finePayment,
-    issuedBy: getUser.bind(this, { _id: issueInfo.issuedBy }),
+    issuedBy: getUser.bind(this, { prn: issueInfo.issuedBy }),
     book: getBook.bind(this, { _id: issueInfo.book }),
   };
 }
@@ -132,7 +132,7 @@ export const getIssueInfos = async (filter, ctx: APIContext) => {
     issueDate: issueInfo.issueDate,
     returnDate: issueInfo.returnDate,
     finePayment: issueInfo.finePayment,
-    issuedBy: getUser.bind(this, { _id: issueInfo.issuedBy }),
+    issuedBy: getUser.bind(this, { prn: issueInfo.issuedBy }),
     book: getBook.bind(this, { _id: issueInfo.book }),
   }));
 }

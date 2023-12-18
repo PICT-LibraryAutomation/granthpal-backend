@@ -3,6 +3,7 @@ import fs from 'fs';
 
 export interface IGranthpalSettings {
   issuePeriod: number,
+  fineAmount: number,
 }
 
 export function getGranthpalSettings(): IGranthpalSettings {

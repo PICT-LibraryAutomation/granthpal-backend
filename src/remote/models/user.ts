@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { UserKind } from '../generated/graphql';
+import { UserKind } from '../../generated/graphql.js';
 
 export interface IUser {
   prn: string,

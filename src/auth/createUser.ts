@@ -14,35 +14,36 @@ export async function createUser(req: Request, res: Response) {
   }
   sessionID = sessionID.trim();
   
+  let prn = req.body.prn;
   let name = req.body.name;
   let phone = req.body.phone;
   let password = req.body.password;
 
-  if (!name || !phone || !password || name === '' || phone === '' || password === '') {
+  if (!prn || !name || !phone || !password || prn === '' || name === '' || phone === '' || password === '') {
     res.status(400);
     res.send(Errors.INVALID_DETAILS_PROVIDED);
     return;
   }
 
+  prn = prn.trim();
   name = name.trim();
   phone = phone.trim();
   password = password.trim();
 
-  let user = await UserModel.findOne({ phone });
+  let user = await UserModel.findOne({ prn });
   if (user != null) {
     res.status(400);
-    res.send(Errors.INVALID_DETAILS_PROVIDED);
+    res.send(Errors.USER_ALREADY_EXISTS);
     return;
   }
 
   const passwordHash = bcrypt.hashSync(password, 10);
 
   const userDoc = new UserModel({
+    prn,
     name,
     passwordHash,
     phone,
-    verified: false,
-    clgID: '',
   });
   user = await userDoc.save();
 

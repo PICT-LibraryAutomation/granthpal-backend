@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { IssueStatus } from '../generated/graphql';
+import { IssueStatus } from '../../generated/graphql.js';
 
 export interface IIssueInfo {
   status: IssueStatus,

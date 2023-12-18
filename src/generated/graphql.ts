@@ -52,6 +52,7 @@ export type GranthpalSettings = {
 
 export type IssueBookInput = {
   bookID: Scalars['String']['input'];
+  issuePeriod?: InputMaybe<Scalars['Int']['input']>;
   prn: Scalars['String']['input'];
 };
 
@@ -181,6 +182,7 @@ export type RegisterBookMetadataInput = {
 
 export type RenewBookInput = {
   bookID: Scalars['String']['input'];
+  issuePeriod?: InputMaybe<Scalars['Int']['input']>;
   prn: Scalars['String']['input'];
 };
 
