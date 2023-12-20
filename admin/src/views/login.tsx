@@ -2,8 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 export function LoginView() {
+  const root = window.document.documentElement;
+  root.classList.add("dark");
+
   return (
-    <div className='h-screen w-screen flex'>
+    <div className='h-screen w-screen flex bg-zinc-950 text-white'>
       <div className='flex-none' style={{ padding: '30px', width: '500px' }}>
         <div style={{ height: '75px' }}></div>
         <h2 className="text-4xl font-bold tracking-tight">Hey, There!</h2>

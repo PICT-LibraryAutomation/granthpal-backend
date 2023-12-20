@@ -5,9 +5,11 @@ import { LoginView } from './views/login';
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path='/' element={<App />}>
-      <Route path='login' element={<LoginView />} />
-      <Route path='' element={<HomeView />} />
-    </Route>
+    <>
+      <Route path='/login' element={<LoginView />} />
+      <Route path='/' element={<App />}>
+        <Route path='' element={<HomeView />} />
+      </Route>
+    </>
   ),
 );
