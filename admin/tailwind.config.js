@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+export default {
   darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',
@@ -16,6 +16,11 @@ module.exports = {
       },
     },
     extend: {
+      fontFamily: {
+        'sans': ['Lexend', 'sans-serif'],
+        'mono': ['"Space Mono"', 'monospace'],
+        'body': ['Lexend', 'sans-serif'],
+      },
       keyframes: {
         "accordion-down": {
           from: { height: 0 },
@@ -32,5 +37,5 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
-}
+  plugins: [import("tailwindcss-animate")],
+};
