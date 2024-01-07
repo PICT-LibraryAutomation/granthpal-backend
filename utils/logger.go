@@ -12,7 +12,12 @@ import (
 
 const logFile = "./logs.txt"
 
-func CreateLogger(dev bool) *zap.Logger {
+func CreateLogger() *zap.Logger {
+	isDev := false
+	if os.Getenv("GRANTHPAL_ENV") == "dev" {
+		isDev = true
+	}
+
 	f, err := os.OpenFile(logFile, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
 		log.Fatal(err)
@@ -23,7 +28,7 @@ func CreateLogger(dev bool) *zap.Logger {
 	consoleEncoder := zapcore.NewConsoleEncoder(pe)
 
 	level := zap.InfoLevel
-	if dev {
+	if isDev {
 		level = zap.DebugLevel
 	}
 

@@ -7,6 +7,7 @@ import (
 
 	"github.com/PICT-LibraryAutomation/granthpal/database"
 	"github.com/PICT-LibraryAutomation/granthpal/routes"
+	"github.com/PICT-LibraryAutomation/granthpal/sessions"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -25,28 +26,21 @@ func main() {
 		port = defaultPort
 	}
 
-	isDev := false
-	if os.Getenv("GRANTHPAL_ENV") == "dev" {
-		isDev = true
-	}
-
-	dsn := os.Getenv("GRANTHPAL_DSN")
-	if dsn == "" {
-		log.Fatalf("DSN not provided")
-	}
-
-	logger := utils.CreateLogger(isDev)
+	logger := utils.CreateLogger()
 	defer logger.Sync()
 	sugar := logger.Sugar()
 
-	db, err := database.NewDatabase(dsn)
+	db, err := database.NewDatabase(sugar)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	sessionsManager := sessions.NewSessionManager(sugar)
+
 	router := chi.NewRouter()
 	router.Use(utils.LoggerMiddleware(sugar))
 	router.Use(database.DatabaseMiddleware(db))
+	router.Use(sessions.SessionsMiddleware(sessionsManager))
 
 	router.Mount("/gql", routes.GraphQLRouter(db, sugar))
 
