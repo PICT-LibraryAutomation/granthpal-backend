@@ -1,0 +1,19 @@
+
+extend type Query {
+  user(prn: String!): User,
+  users: [User!]!,
+}
+
+type User {
+  prn: String!,
+  kind: UserKind!,
+  name: String!,
+  issuing: [IssueInfo!]!,
+  allIssued: [IssueInfo!]!,
+}
+
+enum UserKind {
+  STUDENT,
+  FACULTY,
+  LIBRARY_STAFF,
+}

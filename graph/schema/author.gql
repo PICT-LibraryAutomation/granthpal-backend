@@ -1,0 +1,11 @@
+
+extend type Author {
+  author(id: String!): Author,
+  authors: [Author!]!,
+}
+
+type Author {
+  id: String!,
+  name: String!,
+  books: [BookMetadata!]!,
+}

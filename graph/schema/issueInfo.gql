@@ -1,0 +1,20 @@
+
+extend type Query {
+  issueInfo(id: String!): IssueInfo,
+  issueInfos: [IssueInfo!]!,
+}
+
+type IssueInfo {
+  id: String!,
+  status: IssueStatus!,
+  book: Book!,
+  issuedBy: User!,
+  issueDate: Time!,
+  returnDate: Time!,
+  finePayment: Int!,
+}
+
+enum IssueStatus {
+  BORROWED,
+  RETURNED,
+}

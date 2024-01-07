@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const queryRoute = "/"
+const queryRoute = "/query"
 
 func GraphQLRouter(db *gorm.DB, logger *zap.SugaredLogger) *chi.Mux {
 	router := chi.NewRouter()

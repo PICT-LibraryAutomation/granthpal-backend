@@ -1,0 +1,11 @@
+
+extend type Publisher {
+  publisher(id: String!): Publisher,
+  publishers: [Publisher!]!,
+}
+
+type Publisher {
+  id: String!,
+  name: String!,
+  books: [BookMetadata!]!,
+}

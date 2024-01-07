@@ -1,0 +1,11 @@
+
+extend type Query {
+  book(id: String!): Book,
+  books: [Book!]!,
+}
+
+type Book {
+  id: String!,
+  meta: BookMetadata!,
+  issueInfo: IssueInfo,
+}

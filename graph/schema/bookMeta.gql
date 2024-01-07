@@ -1,0 +1,15 @@
+
+extend type Query {
+  bookMeta(id: String!): BookMetadata,
+  bookMetas: [BookMetadata!]!,
+}
+
+type BookMetadata {
+  id: String!,
+  name: String!,
+  abstract: String!,
+  ISBN: String!,
+  authors: [Author!]!,
+  publisher: Publisher!,
+  books: [Book!]!,
+}

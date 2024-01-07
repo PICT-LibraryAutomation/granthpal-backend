@@ -2,25 +2,146 @@
 
 package graph
 
-type Mutation struct {
+import (
+	"fmt"
+	"io"
+	"strconv"
+	"time"
+)
+
+type Author struct {
+	ID      string          `json:"id"`
+	Name    string          `json:"name"`
+	Books   []*BookMetadata `json:"books"`
+	Author  *Author         `json:"author,omitempty"`
+	Authors []*Author       `json:"authors"`
 }
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
+type Book struct {
+	ID        string        `json:"id"`
+	Meta      *BookMetadata `json:"meta"`
+	IssueInfo *IssueInfo    `json:"issueInfo,omitempty"`
+}
+
+type BookMetadata struct {
+	ID        string     `json:"id"`
+	Name      string     `json:"name"`
+	Abstract  string     `json:"abstract"`
+	Isbn      string     `json:"ISBN"`
+	Authors   []*Author  `json:"authors"`
+	Publisher *Publisher `json:"publisher"`
+	Books     []*Book    `json:"books"`
+}
+
+type IssueInfo struct {
+	ID          string      `json:"id"`
+	Status      IssueStatus `json:"status"`
+	Book        *Book       `json:"book"`
+	IssuedBy    *User       `json:"issuedBy"`
+	IssueDate   time.Time   `json:"issueDate"`
+	ReturnDate  time.Time   `json:"returnDate"`
+	FinePayment int         `json:"finePayment"`
+}
+
+type Publisher struct {
+	ID         string          `json:"id"`
+	Name       string          `json:"name"`
+	Books      []*BookMetadata `json:"books"`
+	Publisher  *Publisher      `json:"publisher,omitempty"`
+	Publishers []*Publisher    `json:"publishers"`
 }
 
 type Query struct {
 }
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type User struct {
+	Prn       string       `json:"prn"`
+	Kind      UserKind     `json:"kind"`
+	Name      string       `json:"name"`
+	Issuing   []*IssueInfo `json:"issuing"`
+	AllIssued []*IssueInfo `json:"allIssued"`
 }
 
-type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type IssueStatus string
+
+const (
+	IssueStatusBorrowed IssueStatus = "BORROWED"
+	IssueStatusReturned IssueStatus = "RETURNED"
+)
+
+var AllIssueStatus = []IssueStatus{
+	IssueStatusBorrowed,
+	IssueStatusReturned,
+}
+
+func (e IssueStatus) IsValid() bool {
+	switch e {
+	case IssueStatusBorrowed, IssueStatusReturned:
+		return true
+	}
+	return false
+}
+
+func (e IssueStatus) String() string {
+	return string(e)
+}
+
+func (e *IssueStatus) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = IssueStatus(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid IssueStatus", str)
+	}
+	return nil
+}
+
+func (e IssueStatus) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type UserKind string
+
+const (
+	UserKindStudent      UserKind = "STUDENT"
+	UserKindFaculty      UserKind = "FACULTY"
+	UserKindLibraryStaff UserKind = "LIBRARY_STAFF"
+)
+
+var AllUserKind = []UserKind{
+	UserKindStudent,
+	UserKindFaculty,
+	UserKindLibraryStaff,
+}
+
+func (e UserKind) IsValid() bool {
+	switch e {
+	case UserKindStudent, UserKindFaculty, UserKindLibraryStaff:
+		return true
+	}
+	return false
+}
+
+func (e UserKind) String() string {
+	return string(e)
+}
+
+func (e *UserKind) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserKind(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserKind", str)
+	}
+	return nil
+}
+
+func (e UserKind) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
