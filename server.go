@@ -5,24 +5,51 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/PICT-LibraryAutomation/granthpal/graph"
+	"github.com/PICT-LibraryAutomation/granthpal/database"
+	"github.com/PICT-LibraryAutomation/granthpal/routes"
+	"github.com/PICT-LibraryAutomation/granthpal/utils"
+	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
 )
 
 const defaultPort = "8080"
 
 func main() {
-	port := os.Getenv("PORT")
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Couldn't load .env")
+	}
+
+	port := os.Getenv("GRANTHPAL_PORT")
 	if port == "" {
 		port = defaultPort
 	}
 
-	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	isDev := false
+	if os.Getenv("GRANTHPAL_ENV") == "dev" {
+		isDev = true
+	}
 
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	dsn := os.Getenv("GRANTHPAL_DSN")
+	if dsn == "" {
+		log.Fatalf("DSN not provided")
+	}
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	logger := utils.CreateLogger(isDev)
+	defer logger.Sync()
+	sugar := logger.Sugar()
+
+	db, err := database.NewDatabase(dsn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	router := chi.NewRouter()
+	router.Use(utils.LoggerMiddleware(sugar))
+	router.Use(database.DatabaseMiddleware(db))
+
+	router.Mount("/gql", routes.GraphQLRouter(db, sugar))
+
+	sugar.Infof("Listening at http://localhost:%s", port)
+	sugar.Fatal(http.ListenAndServe(":"+port, router))
 }
