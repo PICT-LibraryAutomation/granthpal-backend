@@ -6,17 +6,59 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
+	"github.com/PICT-LibraryAutomation/granthpal/utils"
 )
 
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, prn string) (*graph.User, error) {
-	panic(fmt.Errorf("not implemented: User - user"))
+	var user models.User
+	if err := r.DB.First(&user, "prn = ?", prn).Error; err != nil {
+		return nil, err
+	}
+
+	return user.ToGraphModel(), nil
 }
 
 // Users is the resolver for the users field.
 func (r *queryResolver) Users(ctx context.Context) ([]*graph.User, error) {
-	panic(fmt.Errorf("not implemented: Users - users"))
+	var users []models.User
+	if err := r.DB.Find(&users).Error; err != nil {
+		return nil, err
+	}
+
+	return utils.Map(users, func(user models.User) *graph.User {
+		return user.ToGraphModel()
+	}), nil
 }
+
+// Issuing is the resolver for the issuing field.
+func (r *userResolver) Issuing(ctx context.Context, obj *graph.User) ([]*graph.IssueInfo, error) {
+	var issueInfos []models.IssueInfo
+	if err := r.DB.Find(&issueInfos, "issued_by_id = ? AND status = ?", obj.Prn, graph.IssueStatusBorrowed).Error; err != nil {
+		return nil, err
+	}
+
+	return utils.Map(issueInfos, func(issueInfo models.IssueInfo) *graph.IssueInfo {
+		return issueInfo.ToGraphModel()
+	}), nil
+}
+
+// AllIssued is the resolver for the allIssued field.
+func (r *userResolver) AllIssued(ctx context.Context, obj *graph.User) ([]*graph.IssueInfo, error) {
+	var issueInfos []models.IssueInfo
+	if err := r.DB.Find(&issueInfos, "issued_by_id = ?", obj.Prn).Error; err != nil {
+		return nil, err
+	}
+
+	return utils.Map(issueInfos, func(issueInfo models.IssueInfo) *graph.IssueInfo {
+		return issueInfo.ToGraphModel()
+	}), nil
+}
+
+// User returns graph.UserResolver implementation.
+func (r *Resolver) User() graph.UserResolver { return &userResolver{r} }
+
+type userResolver struct{ *Resolver }

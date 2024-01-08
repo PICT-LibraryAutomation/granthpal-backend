@@ -1,11 +1,24 @@
 package models
 
+import (
+	"github.com/PICT-LibraryAutomation/granthpal/graph"
+)
+
 type BookMetadata struct {
 	ID          string `gorm:"primaryKey"`
 	Name        string
 	Abstract    string
 	ISBN        string
-	Authors     []Author `gorm:"many2many:author_books;"`
 	PublisherID string
-	Books       []Book `gorm:"foreignKey:MetaID"`
+	Authors     []Author `gorm:"many2many:book_authors"`
+}
+
+func (t *BookMetadata) ToGraphModel() *graph.BookMetadata {
+	return &graph.BookMetadata{
+		ID:          t.ID,
+		Name:        t.Name,
+		Abstract:    t.Abstract,
+		Isbn:        t.ISBN,
+		PublisherID: t.PublisherID,
+	}
 }

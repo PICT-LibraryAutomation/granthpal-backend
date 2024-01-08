@@ -10,33 +10,35 @@ import (
 )
 
 type Author struct {
-	ID      string          `json:"id"`
-	Name    string          `json:"name"`
-	Books   []*BookMetadata `json:"books"`
-	Author  *Author         `json:"author,omitempty"`
-	Authors []*Author       `json:"authors"`
+	ID    string          `json:"id"`
+	Name  string          `json:"name"`
+	Books []*BookMetadata `json:"books"`
 }
 
 type Book struct {
 	ID        string        `json:"id"`
+	MetaID    string        `json:"metaID"`
 	Meta      *BookMetadata `json:"meta"`
 	IssueInfo *IssueInfo    `json:"issueInfo,omitempty"`
 }
 
 type BookMetadata struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	Abstract  string     `json:"abstract"`
-	Isbn      string     `json:"ISBN"`
-	Authors   []*Author  `json:"authors"`
-	Publisher *Publisher `json:"publisher"`
-	Books     []*Book    `json:"books"`
+	ID          string     `json:"id"`
+	Name        string     `json:"name"`
+	Abstract    string     `json:"abstract"`
+	Isbn        string     `json:"ISBN"`
+	Authors     []*Author  `json:"authors"`
+	PublisherID string     `json:"publisherID"`
+	Publisher   *Publisher `json:"publisher"`
+	Books       []*Book    `json:"books"`
 }
 
 type IssueInfo struct {
 	ID          string      `json:"id"`
 	Status      IssueStatus `json:"status"`
+	BookID      string      `json:"bookID"`
 	Book        *Book       `json:"book"`
+	IssuedByID  string      `json:"issuedByID"`
 	IssuedBy    *User       `json:"issuedBy"`
 	IssueDate   time.Time   `json:"issueDate"`
 	ReturnDate  time.Time   `json:"returnDate"`
@@ -44,11 +46,9 @@ type IssueInfo struct {
 }
 
 type Publisher struct {
-	ID         string          `json:"id"`
-	Name       string          `json:"name"`
-	Books      []*BookMetadata `json:"books"`
-	Publisher  *Publisher      `json:"publisher,omitempty"`
-	Publishers []*Publisher    `json:"publishers"`
+	ID    string          `json:"id"`
+	Name  string          `json:"name"`
+	Books []*BookMetadata `json:"books"`
 }
 
 type Query struct {

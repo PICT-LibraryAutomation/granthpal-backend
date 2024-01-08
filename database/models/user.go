@@ -1,10 +1,19 @@
 package models
 
-import "github.com/PICT-LibraryAutomation/granthpal/graph"
+import (
+	"github.com/PICT-LibraryAutomation/granthpal/graph"
+)
 
 type User struct {
-	PRN       string `gorm:"primaryKey"`
-	Kind      graph.UserKind
-	Name      string
-	AllIssued []IssueInfo `gorm:"foreignKey:IssuedByID"`
+	PRN  string `gorm:"primaryKey"`
+	Kind graph.UserKind
+	Name string
+}
+
+func (t *User) ToGraphModel() *graph.User {
+	return &graph.User{
+		Prn:  t.PRN,
+		Kind: t.Kind,
+		Name: t.Name,
+	}
 }

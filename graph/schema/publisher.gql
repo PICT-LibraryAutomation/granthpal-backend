@@ -1,5 +1,5 @@
 
-extend type Publisher {
+extend type Query {
   publisher(id: String!): Publisher,
   publishers: [Publisher!]!,
 }

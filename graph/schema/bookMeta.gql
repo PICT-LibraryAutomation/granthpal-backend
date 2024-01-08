@@ -10,6 +10,7 @@ type BookMetadata {
   abstract: String!,
   ISBN: String!,
   authors: [Author!]!,
+  publisherID: String!,
   publisher: Publisher!,
   books: [Book!]!,
 }

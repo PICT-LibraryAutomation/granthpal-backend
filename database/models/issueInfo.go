@@ -15,3 +15,15 @@ type IssueInfo struct {
 	ReturnDate  time.Time
 	FinePayment int
 }
+
+func (t *IssueInfo) ToGraphModel() *graph.IssueInfo {
+	return &graph.IssueInfo{
+		ID:          t.ID,
+		Status:      t.Status,
+		BookID:      t.BookID,
+		IssuedByID:  t.IssuedByID,
+		IssueDate:   t.IssueDate,
+		ReturnDate:  t.ReturnDate,
+		FinePayment: t.FinePayment,
+	}
+}

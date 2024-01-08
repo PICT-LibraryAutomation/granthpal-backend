@@ -1,5 +1,5 @@
 
-extend type Author {
+extend type Query {
   author(id: String!): Author,
   authors: [Author!]!,
 }

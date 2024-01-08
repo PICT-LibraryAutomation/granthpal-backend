@@ -6,22 +6,45 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
+	"github.com/PICT-LibraryAutomation/granthpal/utils"
 )
+
+// Meta is the resolver for the meta field.
+func (r *bookResolver) Meta(ctx context.Context, obj *graph.Book) (*graph.BookMetadata, error) {
+	var meta models.BookMetadata
+	if err := r.DB.First(&meta, "id = ?", obj.MetaID).Error; err != nil {
+		return nil, err
+	}
+
+	return meta.ToGraphModel(), nil
+}
 
 // Book is the resolver for the book field.
 func (r *queryResolver) Book(ctx context.Context, id string) (*graph.Book, error) {
-	panic(fmt.Errorf("not implemented: Book - book"))
+	var book models.Book
+	if err := r.DB.First(&book, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+
+	return book.ToGraphModel(), nil
 }
 
 // Books is the resolver for the books field.
 func (r *queryResolver) Books(ctx context.Context) ([]*graph.Book, error) {
-	panic(fmt.Errorf("not implemented: Books - books"))
+	var books []models.Book
+	if err := r.DB.Find(&books).Error; err != nil {
+		return nil, err
+	}
+
+	return utils.Map(books, func(book models.Book) *graph.Book {
+		return book.ToGraphModel()
+	}), nil
 }
 
-// Query returns graph.QueryResolver implementation.
-func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
+// Book returns graph.BookResolver implementation.
+func (r *Resolver) Book() graph.BookResolver { return &bookResolver{r} }
 
-type queryResolver struct{ *Resolver }
+type bookResolver struct{ *Resolver }

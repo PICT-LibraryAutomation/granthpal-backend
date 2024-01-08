@@ -6,6 +6,7 @@ extend type Query {
 
 type Book {
   id: String!,
+  metaID: String!,
   meta: BookMetadata!,
   issueInfo: IssueInfo,
 }

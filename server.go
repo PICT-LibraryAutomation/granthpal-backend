@@ -42,7 +42,7 @@ func main() {
 	router.Use(database.DatabaseMiddleware(db))
 	router.Use(sessions.SessionsMiddleware(sessionsManager))
 
-	router.Mount("/gql", routes.GraphQLRouter(db, sugar))
+	router.Mount("/", routes.GraphQLRouter(db, sugar))
 
 	sugar.Infof("Listening at http://localhost:%s", port)
 	sugar.Fatal(http.ListenAndServe(":"+port, router))

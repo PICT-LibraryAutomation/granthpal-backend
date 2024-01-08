@@ -6,17 +6,58 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
+	"github.com/PICT-LibraryAutomation/granthpal/utils"
 )
+
+// Authors is the resolver for the authors field.
+func (r *bookMetadataResolver) Authors(ctx context.Context, obj *graph.BookMetadata) ([]*graph.Author, error) {
+	var authors []models.Author
+	err := r.DB.Model(&models.BookMetadata{}).Where("id = ?", obj.ID).Association("Authors").Find(&authors)
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.Map(authors, func(author models.Author) *graph.Author {
+		return author.ToGraphModel()
+	}), nil
+}
+
+// Publisher is the resolver for the publisher field.
+func (r *bookMetadataResolver) Publisher(ctx context.Context, obj *graph.BookMetadata) (*graph.Publisher, error) {
+	var publisher models.Publisher
+	if err := r.DB.First(&publisher, "id = ?", obj.PublisherID).Error; err != nil {
+		return nil, err
+	}
+
+	return publisher.ToGraphModel(), nil
+}
 
 // BookMeta is the resolver for the bookMeta field.
 func (r *queryResolver) BookMeta(ctx context.Context, id string) (*graph.BookMetadata, error) {
-	panic(fmt.Errorf("not implemented: BookMeta - bookMeta"))
+	var bookMeta models.BookMetadata
+	if err := r.DB.First(&bookMeta, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
+
+	return bookMeta.ToGraphModel(), nil
 }
 
 // BookMetas is the resolver for the bookMetas field.
 func (r *queryResolver) BookMetas(ctx context.Context) ([]*graph.BookMetadata, error) {
-	panic(fmt.Errorf("not implemented: BookMetas - bookMetas"))
+	var bookMetas []models.BookMetadata
+	if err := r.DB.Find(&bookMetas).Error; err != nil {
+		return nil, err
+	}
+
+	return utils.Map(bookMetas, func(meta models.BookMetadata) *graph.BookMetadata {
+		return meta.ToGraphModel()
+	}), nil
 }
+
+// BookMetadata returns graph.BookMetadataResolver implementation.
+func (r *Resolver) BookMetadata() graph.BookMetadataResolver { return &bookMetadataResolver{r} }
+
+type bookMetadataResolver struct{ *Resolver }

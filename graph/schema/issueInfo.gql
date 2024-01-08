@@ -7,7 +7,9 @@ extend type Query {
 type IssueInfo {
   id: String!,
   status: IssueStatus!,
+  bookID: String!,
   book: Book!,
+  issuedByID: String!,
   issuedBy: User!,
   issueDate: Time!,
   returnDate: Time!,
