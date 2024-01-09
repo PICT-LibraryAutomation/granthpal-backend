@@ -14,7 +14,7 @@ type SessionManager struct {
 	client *redis.Client
 }
 
-func (sm *SessionManager) CreateSession(session Session) (string, error) {
+func (sm *SessionManager) CreateSession(session *Session) (string, error) {
 	if session.ID == "" {
 		session.ID = uuid.NewString()
 	}

@@ -5,9 +5,10 @@ import (
 )
 
 type User struct {
-	PRN  string `gorm:"primaryKey"`
-	Kind graph.UserKind
-	Name string
+	PRN          string `gorm:"primaryKey"`
+	Kind         graph.UserKind
+	Name         string
+	PasswordHash string
 }
 
 func (t *User) ToGraphModel() *graph.User {

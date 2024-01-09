@@ -49,7 +49,8 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
-	IsKind func(ctx context.Context, obj interface{}, next graphql.Resolver, kind UserKind) (res interface{}, err error)
+	IsAuthenticated func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
+	IsKind          func(ctx context.Context, obj interface{}, next graphql.Resolver, kind UserKind) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {

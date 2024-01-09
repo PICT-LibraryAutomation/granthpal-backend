@@ -1,4 +1,5 @@
 
 scalar Time
 
+directive @isAuthenticated on FIELD_DEFINITION
 directive @isKind(kind: UserKind!) on FIELD_DEFINITION
