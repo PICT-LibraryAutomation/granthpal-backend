@@ -7,7 +7,6 @@ import (
 
 	"github.com/PICT-LibraryAutomation/granthpal/database"
 	"github.com/PICT-LibraryAutomation/granthpal/routes"
-	"github.com/PICT-LibraryAutomation/granthpal/sessions"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -35,12 +34,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	sessionsManager := sessions.NewSessionManager(sugar)
-
 	router := chi.NewRouter()
 	router.Use(utils.LoggerMiddleware(sugar))
 	router.Use(database.DatabaseMiddleware(db))
-	router.Use(sessions.SessionsMiddleware(sessionsManager))
 
 	router.Mount("/", routes.GraphQLRouter(db, sugar))
 
