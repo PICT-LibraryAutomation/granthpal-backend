@@ -4,9 +4,17 @@ extend type Query {
   books: [Book!]!,
 }
 
+extend type Mutation {
+  addBookToInventory(inp: AddBookToInventoryInp!): Book,
+}
+
 type Book {
   id: String!,
   metaID: String!,
   meta: BookMetadata!,
   issueInfo: IssueInfo,
+}
+
+input AddBookToInventoryInp {
+  metaID: String!,
 }

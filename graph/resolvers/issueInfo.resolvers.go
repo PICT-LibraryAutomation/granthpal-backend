@@ -6,10 +6,12 @@ package resolvers
 
 import (
 	"context"
+	"time"
 
 	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
+	"github.com/google/uuid"
 )
 
 // Book is the resolver for the book field.
@@ -30,6 +32,63 @@ func (r *issueInfoResolver) IssuedBy(ctx context.Context, obj *graph.IssueInfo) 
 	}
 
 	return issuedBy.ToGraphModel(), nil
+}
+
+// IssueBook is the resolver for the issueBook field.
+func (r *mutationResolver) IssueBook(ctx context.Context, inp graph.IssueBook) (*graph.IssueInfo, error) {
+	issueInfo := models.IssueInfo{
+		ID:          uuid.NewString(),
+		Status:      graph.IssueStatusBorrowed,
+		BookID:      inp.BookID,
+		IssuedByID:  inp.IssuedByID,
+		IssueDate:   time.Now(),
+		ReturnDate:  inp.ReturnDate,
+		FinePayment: 0,
+	}
+	if err := r.DB.Create(&issueInfo).Error; err != nil {
+		return nil, err
+	}
+
+	return issueInfo.ToGraphModel(), nil
+}
+
+// ReturnBook is the resolver for the returnBook field.
+func (r *mutationResolver) ReturnBook(ctx context.Context, inp graph.ReturnBook) (*graph.IssueInfo, error) {
+	var issueInfo models.IssueInfo
+	if err := r.DB.First(&issueInfo, "id = ?", inp.ID).Error; err != nil {
+		return nil, err
+	}
+
+	issueInfo.Status = graph.IssueStatusReturned
+	if time.Now().After(issueInfo.ReturnDate) {
+		issueInfo.FinePayment = int((time.Since(issueInfo.ReturnDate).Hours())/24) * 10
+	}
+
+	if err := r.DB.Save(&issueInfo).Error; err != nil {
+		return nil, err
+	}
+
+	return issueInfo.ToGraphModel(), nil
+}
+
+// RenewBook is the resolver for the renewBook field.
+func (r *mutationResolver) RenewBook(ctx context.Context, inp graph.RenewBook) (*graph.IssueInfo, error) {
+	var issueInfo models.IssueInfo
+	if err := r.DB.First(&issueInfo, "id = ?", inp.ID).Error; err != nil {
+		return nil, err
+	}
+
+	if time.Now().After(issueInfo.ReturnDate) {
+		issueInfo.FinePayment = int((time.Since(issueInfo.ReturnDate).Hours())/24) * 10
+	}
+
+	issueInfo.ReturnDate = inp.ReturnDate
+
+	if err := r.DB.Save(&issueInfo).Error; err != nil {
+		return nil, err
+	}
+
+	return issueInfo.ToGraphModel(), nil
 }
 
 // IssueInfo is the resolver for the issueInfo field.

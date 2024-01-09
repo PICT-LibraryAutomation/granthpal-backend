@@ -10,6 +10,7 @@ import (
 	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
+	"github.com/google/uuid"
 )
 
 // Books is the resolver for the books field.
@@ -23,6 +24,19 @@ func (r *authorResolver) Books(ctx context.Context, obj *graph.Author) ([]*graph
 	return utils.Map(books, func(book models.BookMetadata) *graph.BookMetadata {
 		return book.ToGraphModel()
 	}), nil
+}
+
+// AddAuthor is the resolver for the addAuthor field.
+func (r *mutationResolver) AddAuthor(ctx context.Context, inp graph.AddAuthor) (*graph.Author, error) {
+	author := models.Author{
+		ID:   uuid.NewString(),
+		Name: inp.Name,
+	}
+	if err := r.DB.Create(&author).Error; err != nil {
+		return nil, err
+	}
+
+	return author.ToGraphModel(), nil
 }
 
 // Author is the resolver for the author field.
@@ -50,8 +64,12 @@ func (r *queryResolver) Authors(ctx context.Context) ([]*graph.Author, error) {
 // Author returns graph.AuthorResolver implementation.
 func (r *Resolver) Author() graph.AuthorResolver { return &authorResolver{r} }
 
+// Mutation returns graph.MutationResolver implementation.
+func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
+
 // Query returns graph.QueryResolver implementation.
 func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
 
 type authorResolver struct{ *Resolver }
+type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }

@@ -10,6 +10,7 @@ import (
 	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
+	"github.com/google/uuid"
 )
 
 // Meta is the resolver for the meta field.
@@ -20,6 +21,19 @@ func (r *bookResolver) Meta(ctx context.Context, obj *graph.Book) (*graph.BookMe
 	}
 
 	return meta.ToGraphModel(), nil
+}
+
+// AddBookToInventory is the resolver for the addBookToInventory field.
+func (r *mutationResolver) AddBookToInventory(ctx context.Context, inp graph.AddBookToInventoryInp) (*graph.Book, error) {
+	book := models.Book{
+		ID:     uuid.NewString(),
+		MetaID: inp.MetaID,
+	}
+	if err := r.DB.Create(&book).Error; err != nil {
+		return nil, err
+	}
+
+	return book.ToGraphModel(), nil
 }
 
 // Book is the resolver for the book field.

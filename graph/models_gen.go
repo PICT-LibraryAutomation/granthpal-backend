@@ -9,6 +9,18 @@ import (
 	"time"
 )
 
+type AddAuthor struct {
+	Name string `json:"name"`
+}
+
+type AddBookToInventoryInp struct {
+	MetaID string `json:"metaID"`
+}
+
+type AddPublisher struct {
+	Name string `json:"name"`
+}
+
 type Author struct {
 	ID    string          `json:"id"`
 	Name  string          `json:"name"`
@@ -33,6 +45,20 @@ type BookMetadata struct {
 	Books       []*Book    `json:"books"`
 }
 
+type CreateBookMetaInp struct {
+	Name        string   `json:"name"`
+	Abstract    string   `json:"abstract"`
+	Isbn        string   `json:"ISBN"`
+	AuthorIDs   []string `json:"authorIDs"`
+	PublisherID string   `json:"publisherID"`
+}
+
+type IssueBook struct {
+	BookID     string    `json:"bookID"`
+	IssuedByID string    `json:"issuedByID"`
+	ReturnDate time.Time `json:"returnDate"`
+}
+
 type IssueInfo struct {
 	ID          string      `json:"id"`
 	Status      IssueStatus `json:"status"`
@@ -45,6 +71,9 @@ type IssueInfo struct {
 	FinePayment int         `json:"finePayment"`
 }
 
+type Mutation struct {
+}
+
 type Publisher struct {
 	ID    string          `json:"id"`
 	Name  string          `json:"name"`
@@ -52,6 +81,15 @@ type Publisher struct {
 }
 
 type Query struct {
+}
+
+type RenewBook struct {
+	ID         string    `json:"id"`
+	ReturnDate time.Time `json:"returnDate"`
+}
+
+type ReturnBook struct {
+	ID string `json:"id"`
 }
 
 type User struct {

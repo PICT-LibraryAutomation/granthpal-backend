@@ -10,6 +10,7 @@ import (
 	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
+	"github.com/google/uuid"
 )
 
 // Authors is the resolver for the authors field.
@@ -33,6 +34,25 @@ func (r *bookMetadataResolver) Publisher(ctx context.Context, obj *graph.BookMet
 	}
 
 	return publisher.ToGraphModel(), nil
+}
+
+// CreateBookMeta is the resolver for the createBookMeta field.
+func (r *mutationResolver) CreateBookMeta(ctx context.Context, inp graph.CreateBookMetaInp) (*graph.BookMetadata, error) {
+	bookMeta := models.BookMetadata{
+		ID:          uuid.NewString(),
+		Name:        inp.Name,
+		Abstract:    inp.Abstract,
+		ISBN:        inp.Isbn,
+		PublisherID: inp.PublisherID,
+		Authors: utils.Map(inp.AuthorIDs, func(id string) models.Author {
+			return models.Author{ID: id}
+		}),
+	}
+	if err := r.DB.Create(&bookMeta).Error; err != nil {
+		return nil, err
+	}
+
+	return bookMeta.ToGraphModel(), nil
 }
 
 // BookMeta is the resolver for the bookMeta field.

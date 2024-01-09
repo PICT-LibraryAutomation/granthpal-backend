@@ -10,7 +10,21 @@ import (
 	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
+	"github.com/google/uuid"
 )
+
+// AddPublisher is the resolver for the addPublisher field.
+func (r *mutationResolver) AddPublisher(ctx context.Context, inp graph.AddPublisher) (*graph.Publisher, error) {
+	publisher := models.Publisher{
+		ID:   uuid.NewString(),
+		Name: inp.Name,
+	}
+	if err := r.DB.Create(&publisher).Error; err != nil {
+		return nil, err
+	}
+
+	return publisher.ToGraphModel(), nil
+}
 
 // Books is the resolver for the books field.
 func (r *publisherResolver) Books(ctx context.Context, obj *graph.Publisher) ([]*graph.BookMetadata, error) {

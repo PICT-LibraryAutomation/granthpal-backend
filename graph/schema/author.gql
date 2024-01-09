@@ -4,8 +4,16 @@ extend type Query {
   authors: [Author!]!,
 }
 
+extend type Mutation {
+  addAuthor(inp: AddAuthor!): Author,
+}
+
 type Author {
   id: String!,
   name: String!,
   books: [BookMetadata!]!,
+}
+
+input AddAuthor {
+  name: String!,
 }
