@@ -80,25 +80,32 @@ type ComplexityRoot struct {
 	}
 
 	IssueInfo struct {
-		Book        func(childComplexity int) int
-		BookID      func(childComplexity int) int
-		FinePayment func(childComplexity int) int
-		ID          func(childComplexity int) int
-		IssueDate   func(childComplexity int) int
-		IssuedBy    func(childComplexity int) int
-		IssuedByID  func(childComplexity int) int
-		ReturnDate  func(childComplexity int) int
-		Status      func(childComplexity int) int
+		Book       func(childComplexity int) int
+		BookID     func(childComplexity int) int
+		ID         func(childComplexity int) int
+		IssueDate  func(childComplexity int) int
+		IssuedBy   func(childComplexity int) int
+		IssuedByID func(childComplexity int) int
+		ReturnDate func(childComplexity int) int
+		Status     func(childComplexity int) int
 	}
 
 	Mutation struct {
-		AddAuthor          func(childComplexity int, inp AddAuthor) int
-		AddBookToInventory func(childComplexity int, inp AddBookToInventoryInp) int
-		AddPublisher       func(childComplexity int, inp AddPublisher) int
-		CreateBookMeta     func(childComplexity int, inp CreateBookMetaInp) int
-		IssueBook          func(childComplexity int, inp IssueBook) int
-		RenewBook          func(childComplexity int, inp RenewBook) int
-		ReturnBook         func(childComplexity int, inp ReturnBook) int
+		AddAuthor               func(childComplexity int, inp AddAuthor) int
+		AddBookToInventory      func(childComplexity int, inp AddBookToInventoryInp) int
+		AddPublisher            func(childComplexity int, inp AddPublisher) int
+		CreateBookMeta          func(childComplexity int, inp CreateBookMetaInp) int
+		IssueBook               func(childComplexity int, inp IssueBook) int
+		RemoveAuthor            func(childComplexity int, id string) int
+		RemoveBookFromInventory func(childComplexity int, id string) int
+		RemoveBookMeta          func(childComplexity int, id string) int
+		RemovePublisher         func(childComplexity int, id string) int
+		RenewBook               func(childComplexity int, inp RenewBook) int
+		ResolveFine             func(childComplexity int, prn string) int
+		ReturnBook              func(childComplexity int, inp ReturnBook) int
+		UpdateAuthor            func(childComplexity int, inp UpdateAuthorInp) int
+		UpdateBookMeta          func(childComplexity int, inp UpdateBookMetaInp) int
+		UpdatePublisher         func(childComplexity int, inp UpdatePublisherInp) int
 	}
 
 	Publisher struct {
@@ -123,11 +130,12 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		AllIssued func(childComplexity int) int
-		Issuing   func(childComplexity int) int
-		Kind      func(childComplexity int) int
-		Name      func(childComplexity int) int
-		Prn       func(childComplexity int) int
+		AllIssued   func(childComplexity int) int
+		Issuing     func(childComplexity int) int
+		Kind        func(childComplexity int) int
+		Name        func(childComplexity int) int
+		PendingFine func(childComplexity int) int
+		Prn         func(childComplexity int) int
 	}
 }
 
@@ -149,12 +157,20 @@ type IssueInfoResolver interface {
 }
 type MutationResolver interface {
 	AddAuthor(ctx context.Context, inp AddAuthor) (*Author, error)
+	RemoveAuthor(ctx context.Context, id string) (*string, error)
+	UpdateAuthor(ctx context.Context, inp UpdateAuthorInp) (*Author, error)
 	AddBookToInventory(ctx context.Context, inp AddBookToInventoryInp) (*Book, error)
+	RemoveBookFromInventory(ctx context.Context, id string) (*string, error)
 	CreateBookMeta(ctx context.Context, inp CreateBookMetaInp) (*BookMetadata, error)
+	RemoveBookMeta(ctx context.Context, id string) (*string, error)
+	UpdateBookMeta(ctx context.Context, inp UpdateBookMetaInp) (*BookMetadata, error)
 	IssueBook(ctx context.Context, inp IssueBook) (*IssueInfo, error)
 	ReturnBook(ctx context.Context, inp ReturnBook) (*IssueInfo, error)
 	RenewBook(ctx context.Context, inp RenewBook) (*IssueInfo, error)
 	AddPublisher(ctx context.Context, inp AddPublisher) (*Publisher, error)
+	RemovePublisher(ctx context.Context, id string) (*string, error)
+	UpdatePublisher(ctx context.Context, inp UpdatePublisherInp) (*Publisher, error)
+	ResolveFine(ctx context.Context, prn string) (*User, error)
 }
 type PublisherResolver interface {
 	Books(ctx context.Context, obj *Publisher) ([]*BookMetadata, error)
@@ -316,13 +332,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.IssueInfo.BookID(childComplexity), true
 
-	case "IssueInfo.finePayment":
-		if e.complexity.IssueInfo.FinePayment == nil {
-			break
-		}
-
-		return e.complexity.IssueInfo.FinePayment(childComplexity), true
-
 	case "IssueInfo.id":
 		if e.complexity.IssueInfo.ID == nil {
 			break
@@ -425,6 +434,54 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.IssueBook(childComplexity, args["inp"].(IssueBook)), true
 
+	case "Mutation.removeAuthor":
+		if e.complexity.Mutation.RemoveAuthor == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removeAuthor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RemoveAuthor(childComplexity, args["id"].(string)), true
+
+	case "Mutation.removeBookFromInventory":
+		if e.complexity.Mutation.RemoveBookFromInventory == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removeBookFromInventory_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RemoveBookFromInventory(childComplexity, args["id"].(string)), true
+
+	case "Mutation.removeBookMeta":
+		if e.complexity.Mutation.RemoveBookMeta == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removeBookMeta_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RemoveBookMeta(childComplexity, args["id"].(string)), true
+
+	case "Mutation.removePublisher":
+		if e.complexity.Mutation.RemovePublisher == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removePublisher_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RemovePublisher(childComplexity, args["id"].(string)), true
+
 	case "Mutation.renewBook":
 		if e.complexity.Mutation.RenewBook == nil {
 			break
@@ -437,6 +494,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.RenewBook(childComplexity, args["inp"].(RenewBook)), true
 
+	case "Mutation.resolveFine":
+		if e.complexity.Mutation.ResolveFine == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_resolveFine_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ResolveFine(childComplexity, args["prn"].(string)), true
+
 	case "Mutation.returnBook":
 		if e.complexity.Mutation.ReturnBook == nil {
 			break
@@ -448,6 +517,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.ReturnBook(childComplexity, args["inp"].(ReturnBook)), true
+
+	case "Mutation.updateAuthor":
+		if e.complexity.Mutation.UpdateAuthor == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateAuthor_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateAuthor(childComplexity, args["inp"].(UpdateAuthorInp)), true
+
+	case "Mutation.updateBookMeta":
+		if e.complexity.Mutation.UpdateBookMeta == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateBookMeta_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateBookMeta(childComplexity, args["inp"].(UpdateBookMetaInp)), true
+
+	case "Mutation.updatePublisher":
+		if e.complexity.Mutation.UpdatePublisher == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updatePublisher_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdatePublisher(childComplexity, args["inp"].(UpdatePublisherInp)), true
 
 	case "Publisher.books":
 		if e.complexity.Publisher.Books == nil {
@@ -612,6 +717,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.Name(childComplexity), true
 
+	case "User.pendingFine":
+		if e.complexity.User.PendingFine == nil {
+			break
+		}
+
+		return e.complexity.User.PendingFine(childComplexity), true
+
 	case "User.prn":
 		if e.complexity.User.Prn == nil {
 			break
@@ -634,6 +746,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputIssueBook,
 		ec.unmarshalInputRenewBook,
 		ec.unmarshalInputReturnBook,
+		ec.unmarshalInputUpdateAuthorInp,
+		ec.unmarshalInputUpdateBookMetaInp,
+		ec.unmarshalInputUpdatePublisherInp,
 	)
 	first := true
 
@@ -846,6 +961,66 @@ func (ec *executionContext) field_Mutation_issueBook_args(ctx context.Context, r
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_removeAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_removeBookFromInventory_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_removeBookMeta_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_removePublisher_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_renewBook_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -861,6 +1036,21 @@ func (ec *executionContext) field_Mutation_renewBook_args(ctx context.Context, r
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_resolveFine_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["prn"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("prn"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["prn"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_returnBook_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -868,6 +1058,51 @@ func (ec *executionContext) field_Mutation_returnBook_args(ctx context.Context, 
 	if tmp, ok := rawArgs["inp"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("inp"))
 		arg0, err = ec.unmarshalNReturnBook2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐReturnBook(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["inp"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 UpdateAuthorInp
+	if tmp, ok := rawArgs["inp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("inp"))
+		arg0, err = ec.unmarshalNUpdateAuthorInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUpdateAuthorInp(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["inp"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateBookMeta_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 UpdateBookMetaInp
+	if tmp, ok := rawArgs["inp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("inp"))
+		arg0, err = ec.unmarshalNUpdateBookMetaInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUpdateBookMetaInp(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["inp"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updatePublisher_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 UpdatePublisherInp
+	if tmp, ok := rawArgs["inp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("inp"))
+		arg0, err = ec.unmarshalNUpdatePublisherInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUpdatePublisherInp(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1371,8 +1606,6 @@ func (ec *executionContext) fieldContext_Book_issueInfo(ctx context.Context, fie
 				return ec.fieldContext_IssueInfo_issueDate(ctx, field)
 			case "returnDate":
 				return ec.fieldContext_IssueInfo_returnDate(ctx, field)
-			case "finePayment":
-				return ec.fieldContext_IssueInfo_finePayment(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IssueInfo", field.Name)
 		},
@@ -2033,6 +2266,8 @@ func (ec *executionContext) fieldContext_IssueInfo_issuedBy(ctx context.Context,
 				return ec.fieldContext_User_kind(ctx, field)
 			case "name":
 				return ec.fieldContext_User_name(ctx, field)
+			case "pendingFine":
+				return ec.fieldContext_User_pendingFine(ctx, field)
 			case "issuing":
 				return ec.fieldContext_User_issuing(ctx, field)
 			case "allIssued":
@@ -2132,50 +2367,6 @@ func (ec *executionContext) fieldContext_IssueInfo_returnDate(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _IssueInfo_finePayment(ctx context.Context, field graphql.CollectedField, obj *IssueInfo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_IssueInfo_finePayment(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.FinePayment, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_IssueInfo_finePayment(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "IssueInfo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Mutation_addAuthor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_addAuthor(ctx, field)
 	if err != nil {
@@ -2230,6 +2421,118 @@ func (ec *executionContext) fieldContext_Mutation_addAuthor(ctx context.Context,
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_addAuthor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_removeAuthor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_removeAuthor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RemoveAuthor(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_removeAuthor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_removeAuthor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateAuthor(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateAuthor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateAuthor(rctx, fc.Args["inp"].(UpdateAuthorInp))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Author)
+	fc.Result = res
+	return ec.marshalOAuthor2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐAuthor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateAuthor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Author_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Author_name(ctx, field)
+			case "books":
+				return ec.fieldContext_Author_books(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Author", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateAuthor_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2292,6 +2595,58 @@ func (ec *executionContext) fieldContext_Mutation_addBookToInventory(ctx context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_addBookToInventory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_removeBookFromInventory(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_removeBookFromInventory(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RemoveBookFromInventory(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_removeBookFromInventory(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_removeBookFromInventory_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2368,6 +2723,128 @@ func (ec *executionContext) fieldContext_Mutation_createBookMeta(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_removeBookMeta(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_removeBookMeta(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RemoveBookMeta(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_removeBookMeta(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_removeBookMeta_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateBookMeta(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateBookMeta(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateBookMeta(rctx, fc.Args["inp"].(UpdateBookMetaInp))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*BookMetadata)
+	fc.Result = res
+	return ec.marshalOBookMetadata2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐBookMetadata(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateBookMeta(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BookMetadata_id(ctx, field)
+			case "name":
+				return ec.fieldContext_BookMetadata_name(ctx, field)
+			case "abstract":
+				return ec.fieldContext_BookMetadata_abstract(ctx, field)
+			case "ISBN":
+				return ec.fieldContext_BookMetadata_ISBN(ctx, field)
+			case "authors":
+				return ec.fieldContext_BookMetadata_authors(ctx, field)
+			case "publisherID":
+				return ec.fieldContext_BookMetadata_publisherID(ctx, field)
+			case "publisher":
+				return ec.fieldContext_BookMetadata_publisher(ctx, field)
+			case "books":
+				return ec.fieldContext_BookMetadata_books(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateBookMeta_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_issueBook(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_issueBook(ctx, field)
 	if err != nil {
@@ -2420,8 +2897,6 @@ func (ec *executionContext) fieldContext_Mutation_issueBook(ctx context.Context,
 				return ec.fieldContext_IssueInfo_issueDate(ctx, field)
 			case "returnDate":
 				return ec.fieldContext_IssueInfo_returnDate(ctx, field)
-			case "finePayment":
-				return ec.fieldContext_IssueInfo_finePayment(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IssueInfo", field.Name)
 		},
@@ -2492,8 +2967,6 @@ func (ec *executionContext) fieldContext_Mutation_returnBook(ctx context.Context
 				return ec.fieldContext_IssueInfo_issueDate(ctx, field)
 			case "returnDate":
 				return ec.fieldContext_IssueInfo_returnDate(ctx, field)
-			case "finePayment":
-				return ec.fieldContext_IssueInfo_finePayment(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IssueInfo", field.Name)
 		},
@@ -2564,8 +3037,6 @@ func (ec *executionContext) fieldContext_Mutation_renewBook(ctx context.Context,
 				return ec.fieldContext_IssueInfo_issueDate(ctx, field)
 			case "returnDate":
 				return ec.fieldContext_IssueInfo_returnDate(ctx, field)
-			case "finePayment":
-				return ec.fieldContext_IssueInfo_finePayment(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IssueInfo", field.Name)
 		},
@@ -2638,6 +3109,184 @@ func (ec *executionContext) fieldContext_Mutation_addPublisher(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_addPublisher_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_removePublisher(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_removePublisher(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().RemovePublisher(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_removePublisher(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_removePublisher_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updatePublisher(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updatePublisher(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdatePublisher(rctx, fc.Args["inp"].(UpdatePublisherInp))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Publisher)
+	fc.Result = res
+	return ec.marshalOPublisher2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐPublisher(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updatePublisher(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Publisher_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Publisher_name(ctx, field)
+			case "books":
+				return ec.fieldContext_Publisher_books(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Publisher", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updatePublisher_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_resolveFine(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_resolveFine(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ResolveFine(rctx, fc.Args["prn"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*User)
+	fc.Result = res
+	return ec.marshalOUser2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_resolveFine(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "prn":
+				return ec.fieldContext_User_prn(ctx, field)
+			case "kind":
+				return ec.fieldContext_User_kind(ctx, field)
+			case "name":
+				return ec.fieldContext_User_name(ctx, field)
+			case "pendingFine":
+				return ec.fieldContext_User_pendingFine(ctx, field)
+			case "issuing":
+				return ec.fieldContext_User_issuing(ctx, field)
+			case "allIssued":
+				return ec.fieldContext_User_allIssued(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_resolveFine_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3206,8 +3855,6 @@ func (ec *executionContext) fieldContext_Query_issueInfo(ctx context.Context, fi
 				return ec.fieldContext_IssueInfo_issueDate(ctx, field)
 			case "returnDate":
 				return ec.fieldContext_IssueInfo_returnDate(ctx, field)
-			case "finePayment":
-				return ec.fieldContext_IssueInfo_finePayment(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IssueInfo", field.Name)
 		},
@@ -3281,8 +3928,6 @@ func (ec *executionContext) fieldContext_Query_issueInfos(ctx context.Context, f
 				return ec.fieldContext_IssueInfo_issueDate(ctx, field)
 			case "returnDate":
 				return ec.fieldContext_IssueInfo_returnDate(ctx, field)
-			case "finePayment":
-				return ec.fieldContext_IssueInfo_finePayment(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IssueInfo", field.Name)
 		},
@@ -3444,6 +4089,8 @@ func (ec *executionContext) fieldContext_Query_user(ctx context.Context, field g
 				return ec.fieldContext_User_kind(ctx, field)
 			case "name":
 				return ec.fieldContext_User_name(ctx, field)
+			case "pendingFine":
+				return ec.fieldContext_User_pendingFine(ctx, field)
 			case "issuing":
 				return ec.fieldContext_User_issuing(ctx, field)
 			case "allIssued":
@@ -3511,6 +4158,8 @@ func (ec *executionContext) fieldContext_Query_users(ctx context.Context, field 
 				return ec.fieldContext_User_kind(ctx, field)
 			case "name":
 				return ec.fieldContext_User_name(ctx, field)
+			case "pendingFine":
+				return ec.fieldContext_User_pendingFine(ctx, field)
 			case "issuing":
 				return ec.fieldContext_User_issuing(ctx, field)
 			case "allIssued":
@@ -3783,6 +4432,50 @@ func (ec *executionContext) fieldContext_User_name(ctx context.Context, field gr
 	return fc, nil
 }
 
+func (ec *executionContext) _User_pendingFine(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_pendingFine(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PendingFine, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_pendingFine(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _User_issuing(ctx context.Context, field graphql.CollectedField, obj *User) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_User_issuing(ctx, field)
 	if err != nil {
@@ -3838,8 +4531,6 @@ func (ec *executionContext) fieldContext_User_issuing(ctx context.Context, field
 				return ec.fieldContext_IssueInfo_issueDate(ctx, field)
 			case "returnDate":
 				return ec.fieldContext_IssueInfo_returnDate(ctx, field)
-			case "finePayment":
-				return ec.fieldContext_IssueInfo_finePayment(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IssueInfo", field.Name)
 		},
@@ -3902,8 +4593,6 @@ func (ec *executionContext) fieldContext_User_allIssued(ctx context.Context, fie
 				return ec.fieldContext_IssueInfo_issueDate(ctx, field)
 			case "returnDate":
 				return ec.fieldContext_IssueInfo_returnDate(ctx, field)
-			case "finePayment":
-				return ec.fieldContext_IssueInfo_finePayment(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type IssueInfo", field.Name)
 		},
@@ -5922,6 +6611,129 @@ func (ec *executionContext) unmarshalInputReturnBook(ctx context.Context, obj in
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateAuthorInp(ctx context.Context, obj interface{}) (UpdateAuthorInp, error) {
+	var it UpdateAuthorInp
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "name"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateBookMetaInp(ctx context.Context, obj interface{}) (UpdateBookMetaInp, error) {
+	var it UpdateBookMetaInp
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "name", "abstract", "ISBN", "publisherID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "abstract":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("abstract"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Abstract = data
+		case "ISBN":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ISBN"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Isbn = data
+		case "publisherID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("publisherID"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PublisherID = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdatePublisherInp(ctx context.Context, obj interface{}) (UpdatePublisherInp, error) {
+	var it UpdatePublisherInp
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "name"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -6341,11 +7153,6 @@ func (ec *executionContext) _IssueInfo(ctx context.Context, sel ast.SelectionSet
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
-		case "finePayment":
-			out.Values[i] = ec._IssueInfo_finePayment(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6392,13 +7199,33 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addAuthor(ctx, field)
 			})
+		case "removeAuthor":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_removeAuthor(ctx, field)
+			})
+		case "updateAuthor":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateAuthor(ctx, field)
+			})
 		case "addBookToInventory":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addBookToInventory(ctx, field)
 			})
+		case "removeBookFromInventory":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_removeBookFromInventory(ctx, field)
+			})
 		case "createBookMeta":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createBookMeta(ctx, field)
+			})
+		case "removeBookMeta":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_removeBookMeta(ctx, field)
+			})
+		case "updateBookMeta":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateBookMeta(ctx, field)
 			})
 		case "issueBook":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -6415,6 +7242,18 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "addPublisher":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_addPublisher(ctx, field)
+			})
+		case "removePublisher":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_removePublisher(ctx, field)
+			})
+		case "updatePublisher":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updatePublisher(ctx, field)
+			})
+		case "resolveFine":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_resolveFine(ctx, field)
 			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -6838,6 +7677,11 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "name":
 			out.Values[i] = ec._User_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "pendingFine":
+			out.Values[i] = ec._User_pendingFine(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -7679,6 +8523,21 @@ func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel as
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNUpdateAuthorInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUpdateAuthorInp(ctx context.Context, v interface{}) (UpdateAuthorInp, error) {
+	res, err := ec.unmarshalInputUpdateAuthorInp(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdateBookMetaInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUpdateBookMetaInp(ctx context.Context, v interface{}) (UpdateBookMetaInp, error) {
+	res, err := ec.unmarshalInputUpdateBookMetaInp(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpdatePublisherInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUpdatePublisherInp(ctx context.Context, v interface{}) (UpdatePublisherInp, error) {
+	res, err := ec.unmarshalInputUpdatePublisherInp(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNUser2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUser(ctx context.Context, sel ast.SelectionSet, v User) graphql.Marshaler {

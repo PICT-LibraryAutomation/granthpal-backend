@@ -37,13 +37,12 @@ func (r *issueInfoResolver) IssuedBy(ctx context.Context, obj *graph.IssueInfo) 
 // IssueBook is the resolver for the issueBook field.
 func (r *mutationResolver) IssueBook(ctx context.Context, inp graph.IssueBook) (*graph.IssueInfo, error) {
 	issueInfo := models.IssueInfo{
-		ID:          uuid.NewString(),
-		Status:      graph.IssueStatusBorrowed,
-		BookID:      inp.BookID,
-		IssuedByID:  inp.IssuedByID,
-		IssueDate:   time.Now(),
-		ReturnDate:  inp.ReturnDate,
-		FinePayment: 0,
+		ID:         uuid.NewString(),
+		Status:     graph.IssueStatusBorrowed,
+		BookID:     inp.BookID,
+		IssuedByID: inp.IssuedByID,
+		IssueDate:  time.Now(),
+		ReturnDate: inp.ReturnDate,
 	}
 	if err := r.DB.Create(&issueInfo).Error; err != nil {
 		return nil, err
@@ -61,7 +60,11 @@ func (r *mutationResolver) ReturnBook(ctx context.Context, inp graph.ReturnBook)
 
 	issueInfo.Status = graph.IssueStatusReturned
 	if time.Now().After(issueInfo.ReturnDate) {
-		issueInfo.FinePayment = int((time.Since(issueInfo.ReturnDate).Hours())/24) * 10
+		fine := int((time.Since(issueInfo.ReturnDate).Hours())/24) * 10
+		var user models.User
+		r.DB.First(&user, "prn = ?", issueInfo.IssuedByID)
+		user.PendingFine += fine
+		r.DB.Save(&user)
 	}
 
 	if err := r.DB.Save(&issueInfo).Error; err != nil {
@@ -79,7 +82,11 @@ func (r *mutationResolver) RenewBook(ctx context.Context, inp graph.RenewBook) (
 	}
 
 	if time.Now().After(issueInfo.ReturnDate) {
-		issueInfo.FinePayment = int((time.Since(issueInfo.ReturnDate).Hours())/24) * 10
+		fine := int((time.Since(issueInfo.ReturnDate).Hours())/24) * 10
+		var user models.User
+		r.DB.First(&user, "prn = ?", issueInfo.IssuedByID)
+		user.PendingFine += fine
+		r.DB.Save(&user)
 	}
 
 	issueInfo.ReturnDate = inp.ReturnDate

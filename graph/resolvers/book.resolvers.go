@@ -36,6 +36,14 @@ func (r *mutationResolver) AddBookToInventory(ctx context.Context, inp graph.Add
 	return book.ToGraphModel(), nil
 }
 
+// RemoveBookFromInventory is the resolver for the removeBookFromInventory field.
+func (r *mutationResolver) RemoveBookFromInventory(ctx context.Context, id string) (*string, error) {
+	if err := r.DB.Delete(&models.Book{ID: id}).Error; err != nil {
+		return nil, err
+	}
+	return &id, nil
+}
+
 // Book is the resolver for the book field.
 func (r *queryResolver) Book(ctx context.Context, id string) (*graph.Book, error) {
 	var book models.Book

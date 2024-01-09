@@ -6,6 +6,8 @@ extend type Query {
 
 extend type Mutation {
   addAuthor(inp: AddAuthor!): Author,
+  removeAuthor(id: String!): String,
+  updateAuthor(inp: UpdateAuthorInp!): Author,
 }
 
 type Author {
@@ -16,4 +18,9 @@ type Author {
 
 input AddAuthor {
   name: String!,
+}
+
+input UpdateAuthorInp {
+  id: String!,
+  name: String,
 }

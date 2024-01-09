@@ -60,15 +60,14 @@ type IssueBook struct {
 }
 
 type IssueInfo struct {
-	ID          string      `json:"id"`
-	Status      IssueStatus `json:"status"`
-	BookID      string      `json:"bookID"`
-	Book        *Book       `json:"book"`
-	IssuedByID  string      `json:"issuedByID"`
-	IssuedBy    *User       `json:"issuedBy"`
-	IssueDate   time.Time   `json:"issueDate"`
-	ReturnDate  time.Time   `json:"returnDate"`
-	FinePayment int         `json:"finePayment"`
+	ID         string      `json:"id"`
+	Status     IssueStatus `json:"status"`
+	BookID     string      `json:"bookID"`
+	Book       *Book       `json:"book"`
+	IssuedByID string      `json:"issuedByID"`
+	IssuedBy   *User       `json:"issuedBy"`
+	IssueDate  time.Time   `json:"issueDate"`
+	ReturnDate time.Time   `json:"returnDate"`
 }
 
 type Mutation struct {
@@ -92,12 +91,31 @@ type ReturnBook struct {
 	ID string `json:"id"`
 }
 
+type UpdateAuthorInp struct {
+	ID   string  `json:"id"`
+	Name *string `json:"name,omitempty"`
+}
+
+type UpdateBookMetaInp struct {
+	ID          string  `json:"id"`
+	Name        *string `json:"name,omitempty"`
+	Abstract    *string `json:"abstract,omitempty"`
+	Isbn        *string `json:"ISBN,omitempty"`
+	PublisherID *string `json:"publisherID,omitempty"`
+}
+
+type UpdatePublisherInp struct {
+	ID   string  `json:"id"`
+	Name *string `json:"name,omitempty"`
+}
+
 type User struct {
-	Prn       string       `json:"prn"`
-	Kind      UserKind     `json:"kind"`
-	Name      string       `json:"name"`
-	Issuing   []*IssueInfo `json:"issuing"`
-	AllIssued []*IssueInfo `json:"allIssued"`
+	Prn         string       `json:"prn"`
+	Kind        UserKind     `json:"kind"`
+	Name        string       `json:"name"`
+	PendingFine int          `json:"pendingFine"`
+	Issuing     []*IssueInfo `json:"issuing"`
+	AllIssued   []*IssueInfo `json:"allIssued"`
 }
 
 type IssueStatus string

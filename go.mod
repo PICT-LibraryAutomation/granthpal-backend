@@ -3,6 +3,7 @@ module github.com/PICT-LibraryAutomation/granthpal
 go 1.21.5
 
 require (
+	dario.cat/mergo v1.0.0
 	github.com/99designs/gqlgen v0.17.42
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/google/uuid v1.3.0

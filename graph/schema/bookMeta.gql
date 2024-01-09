@@ -6,6 +6,8 @@ extend type Query {
 
 extend type Mutation {
   createBookMeta(inp: CreateBookMetaInp!): BookMetadata,
+  removeBookMeta(id: String!): String,
+  updateBookMeta(inp: UpdateBookMetaInp!): BookMetadata,
 }
 
 type BookMetadata {
@@ -25,4 +27,12 @@ input CreateBookMetaInp {
   ISBN: String!,
   authorIDs: [String!]!,
   publisherID: String!,
+}
+
+input UpdateBookMetaInp {
+  id: String!,
+  name: String,
+  abstract: String,
+  ISBN: String,
+  publisherID: String,
 }

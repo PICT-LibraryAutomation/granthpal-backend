@@ -9,12 +9,14 @@ type User struct {
 	Kind         graph.UserKind
 	Name         string
 	PasswordHash string
+	PendingFine  int
 }
 
 func (t *User) ToGraphModel() *graph.User {
 	return &graph.User{
-		Prn:  t.PRN,
-		Kind: t.Kind,
-		Name: t.Name,
+		Prn:         t.PRN,
+		Kind:        t.Kind,
+		Name:        t.Name,
+		PendingFine: t.PendingFine,
 	}
 }

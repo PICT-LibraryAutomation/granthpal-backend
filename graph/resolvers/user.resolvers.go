@@ -12,6 +12,19 @@ import (
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
 )
 
+// ResolveFine is the resolver for the resolveFine field.
+func (r *mutationResolver) ResolveFine(ctx context.Context, prn string) (*graph.User, error) {
+	var user models.User
+	if err := r.DB.First(&user, "prn = ?", prn).Error; err != nil {
+		return nil, err
+	}
+
+	user.PendingFine = 0
+	r.DB.Save(&user)
+
+	return user.ToGraphModel(), nil
+}
+
 // User is the resolver for the user field.
 func (r *queryResolver) User(ctx context.Context, prn string) (*graph.User, error) {
 	var user models.User

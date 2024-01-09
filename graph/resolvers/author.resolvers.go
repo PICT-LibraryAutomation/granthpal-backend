@@ -7,6 +7,7 @@ package resolvers
 import (
 	"context"
 
+	"dario.cat/mergo"
 	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
@@ -35,6 +36,27 @@ func (r *mutationResolver) AddAuthor(ctx context.Context, inp graph.AddAuthor) (
 	if err := r.DB.Create(&author).Error; err != nil {
 		return nil, err
 	}
+
+	return author.ToGraphModel(), nil
+}
+
+// RemoveAuthor is the resolver for the removeAuthor field.
+func (r *mutationResolver) RemoveAuthor(ctx context.Context, id string) (*string, error) {
+	if err := r.DB.Delete(&models.Author{ID: id}).Error; err != nil {
+		return nil, err
+	}
+	return &id, nil
+}
+
+// UpdateAuthor is the resolver for the updateAuthor field.
+func (r *mutationResolver) UpdateAuthor(ctx context.Context, inp graph.UpdateAuthorInp) (*graph.Author, error) {
+	var author models.Author
+	if err := r.DB.First(&author, "id = ?", inp.ID).Error; err != nil {
+		return nil, err
+	}
+
+	mergo.Merge(&author, inp)
+	r.DB.Save(&author)
 
 	return author.ToGraphModel(), nil
 }

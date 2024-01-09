@@ -7,6 +7,7 @@ package resolvers
 import (
 	"context"
 
+	"dario.cat/mergo"
 	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
@@ -51,6 +52,27 @@ func (r *mutationResolver) CreateBookMeta(ctx context.Context, inp graph.CreateB
 	if err := r.DB.Create(&bookMeta).Error; err != nil {
 		return nil, err
 	}
+
+	return bookMeta.ToGraphModel(), nil
+}
+
+// RemoveBookMeta is the resolver for the removeBookMeta field.
+func (r *mutationResolver) RemoveBookMeta(ctx context.Context, id string) (*string, error) {
+	if err := r.DB.Delete(&models.BookMetadata{ID: id}).Error; err != nil {
+		return nil, err
+	}
+	return &id, nil
+}
+
+// UpdateBookMeta is the resolver for the updateBookMeta field.
+func (r *mutationResolver) UpdateBookMeta(ctx context.Context, inp graph.UpdateBookMetaInp) (*graph.BookMetadata, error) {
+	var bookMeta models.BookMetadata
+	if err := r.DB.First(&bookMeta, "id = ?", inp.ID).Error; err != nil {
+		return nil, err
+	}
+
+	mergo.Merge(&bookMeta, inp)
+	r.DB.Save(&bookMeta)
 
 	return bookMeta.ToGraphModel(), nil
 }

@@ -7,6 +7,7 @@ package resolvers
 import (
 	"context"
 
+	"dario.cat/mergo"
 	"github.com/PICT-LibraryAutomation/granthpal/database/models"
 	"github.com/PICT-LibraryAutomation/granthpal/graph"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
@@ -22,6 +23,27 @@ func (r *mutationResolver) AddPublisher(ctx context.Context, inp graph.AddPublis
 	if err := r.DB.Create(&publisher).Error; err != nil {
 		return nil, err
 	}
+
+	return publisher.ToGraphModel(), nil
+}
+
+// RemovePublisher is the resolver for the removePublisher field.
+func (r *mutationResolver) RemovePublisher(ctx context.Context, id string) (*string, error) {
+	if err := r.DB.Delete(&models.Publisher{ID: id}).Error; err != nil {
+		return nil, err
+	}
+	return &id, nil
+}
+
+// UpdatePublisher is the resolver for the updatePublisher field.
+func (r *mutationResolver) UpdatePublisher(ctx context.Context, inp graph.UpdatePublisherInp) (*graph.Publisher, error) {
+	var publisher models.Publisher
+	if err := r.DB.First(&publisher, "id = ?", inp.ID).Error; err != nil {
+		return nil, err
+	}
+
+	mergo.Merge(&publisher, inp)
+	r.DB.Save(&publisher)
 
 	return publisher.ToGraphModel(), nil
 }

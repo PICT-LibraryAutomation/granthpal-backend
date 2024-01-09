@@ -6,6 +6,8 @@ extend type Query {
 
 extend type Mutation {
   addPublisher(inp: AddPublisher!): Publisher,
+  removePublisher(id: String!): String,
+  updatePublisher(inp: UpdatePublisherInp!): Publisher,
 }
 
 type Publisher {
@@ -16,4 +18,9 @@ type Publisher {
 
 input AddPublisher {
   name: String!,
+}
+
+input UpdatePublisherInp {
+  id: String!,
+  name: String,
 }

@@ -4,10 +4,15 @@ extend type Query {
   users: [User!]!,
 }
 
+extend type Mutation {
+  resolveFine(prn: String!): User,
+}
+
 type User {
   prn: String!,
   kind: UserKind!,
   name: String!,
+  pendingFine: Int!,
   issuing: [IssueInfo!]!,
   allIssued: [IssueInfo!]!,
 }

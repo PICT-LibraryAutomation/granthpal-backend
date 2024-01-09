@@ -19,7 +19,6 @@ type IssueInfo {
   issuedBy: User!,
   issueDate: Time!,
   returnDate: Time!,
-  finePayment: Int!,
 }
 
 enum IssueStatus {
