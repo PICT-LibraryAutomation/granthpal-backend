@@ -17,7 +17,7 @@ import (
 // Books is the resolver for the books field.
 func (r *authorResolver) Books(ctx context.Context, obj *graph.Author) ([]*graph.BookMetadata, error) {
 	var books []models.BookMetadata
-	err := r.DB.Model(&models.Author{}).Where("id = ?", obj.ID).Association("Books").Find(&books)
+	err := r.DB.Model(&models.Author{ID: obj.ID}).Association("Books").Find(&books)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func (r *authorResolver) Books(ctx context.Context, obj *graph.Author) ([]*graph
 }
 
 // AddAuthor is the resolver for the addAuthor field.
-func (r *mutationResolver) AddAuthor(ctx context.Context, inp graph.AddAuthor) (*graph.Author, error) {
+func (r *mutationResolver) AddAuthor(ctx context.Context, inp graph.AddAuthorInp) (*graph.Author, error) {
 	author := models.Author{
 		ID:   uuid.NewString(),
 		Name: inp.Name,

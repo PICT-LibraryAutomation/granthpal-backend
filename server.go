@@ -45,6 +45,7 @@ func main() {
 	router.Use(auth.AuthMiddleware())
 
 	router.Mount("/", routes.GraphQLRouter(db, sugar))
+	router.Mount("/auth", routes.AuthRouter())
 
 	sugar.Infof("Listening at http://localhost:%s", port)
 	sugar.Fatal(http.ListenAndServe(":"+port, router))

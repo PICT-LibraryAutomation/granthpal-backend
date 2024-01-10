@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-type AddAuthor struct {
+type AddAuthorInp struct {
 	Name string `json:"name"`
 }
 
@@ -17,7 +17,7 @@ type AddBookToInventoryInp struct {
 	MetaID string `json:"metaID"`
 }
 
-type AddPublisher struct {
+type AddPublisherInp struct {
 	Name string `json:"name"`
 }
 

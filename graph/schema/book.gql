@@ -5,8 +5,8 @@ extend type Query {
 }
 
 extend type Mutation {
-  addBookToInventory(inp: AddBookToInventoryInp!): Book,
-  removeBookFromInventory(id: String!): String,
+  addBookToInventory(inp: AddBookToInventoryInp!): Book @isKind(kind: LIBRARY_STAFF),
+  removeBookFromInventory(id: String!): String @isKind(kind: LIBRARY_STAFF),
 }
 
 type Book {

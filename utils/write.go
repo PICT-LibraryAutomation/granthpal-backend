@@ -5,18 +5,6 @@ import (
 	"net/http"
 )
 
-type ErrorResponse struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-}
-
-func (er *ErrorResponse) Write(w *http.ResponseWriter) {
-	data, _ := json.Marshal(er)
-	(*w).Header().Set("Content-Type", "application/json")
-	(*w).WriteHeader(er.Code)
-	(*w).Write(data)
-}
-
 type Response struct {
 	Code int
 	Data any

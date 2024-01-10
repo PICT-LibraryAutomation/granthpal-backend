@@ -5,9 +5,9 @@ extend type Query {
 }
 
 extend type Mutation {
-  createBookMeta(inp: CreateBookMetaInp!): BookMetadata,
-  removeBookMeta(id: String!): String,
-  updateBookMeta(inp: UpdateBookMetaInp!): BookMetadata,
+  createBookMeta(inp: CreateBookMetaInp!): BookMetadata @isKind(kind: LIBRARY_STAFF),
+  removeBookMeta(id: String!): String @isKind(kind: LIBRARY_STAFF),
+  updateBookMeta(inp: UpdateBookMetaInp!): BookMetadata @isKind(kind: LIBRARY_STAFF),
 }
 
 type BookMetadata {

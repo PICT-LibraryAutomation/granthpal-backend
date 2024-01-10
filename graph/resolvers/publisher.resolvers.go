@@ -15,7 +15,7 @@ import (
 )
 
 // AddPublisher is the resolver for the addPublisher field.
-func (r *mutationResolver) AddPublisher(ctx context.Context, inp graph.AddPublisher) (*graph.Publisher, error) {
+func (r *mutationResolver) AddPublisher(ctx context.Context, inp graph.AddPublisherInp) (*graph.Publisher, error) {
 	publisher := models.Publisher{
 		ID:   uuid.NewString(),
 		Name: inp.Name,

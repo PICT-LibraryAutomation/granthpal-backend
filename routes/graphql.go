@@ -22,10 +22,14 @@ func GraphQLRouter(db *gorm.DB, logger *zap.SugaredLogger) *chi.Mux {
 }
 
 func graphqlServer(db *gorm.DB, logger *zap.SugaredLogger) *handler.Server {
-	return handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &resolvers.Resolver{
+	config := graph.Config{Resolvers: &resolvers.Resolver{
 		DB:     db,
 		Logger: logger,
-	}}))
+	}}
+	config.Directives.IsKind = resolvers.IsKind
+	config.Directives.IsAuthenticated = resolvers.IsAuthenticated
+
+	return handler.NewDefaultServer(graph.NewExecutableSchema(config))
 }
 
 func playgroundHandler(queryRoute string) http.HandlerFunc {

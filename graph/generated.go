@@ -91,9 +91,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddAuthor               func(childComplexity int, inp AddAuthor) int
+		AddAuthor               func(childComplexity int, inp AddAuthorInp) int
 		AddBookToInventory      func(childComplexity int, inp AddBookToInventoryInp) int
-		AddPublisher            func(childComplexity int, inp AddPublisher) int
+		AddPublisher            func(childComplexity int, inp AddPublisherInp) int
 		CreateBookMeta          func(childComplexity int, inp CreateBookMetaInp) int
 		IssueBook               func(childComplexity int, inp IssueBook) int
 		RemoveAuthor            func(childComplexity int, id string) int
@@ -156,7 +156,7 @@ type IssueInfoResolver interface {
 	IssuedBy(ctx context.Context, obj *IssueInfo) (*User, error)
 }
 type MutationResolver interface {
-	AddAuthor(ctx context.Context, inp AddAuthor) (*Author, error)
+	AddAuthor(ctx context.Context, inp AddAuthorInp) (*Author, error)
 	RemoveAuthor(ctx context.Context, id string) (*string, error)
 	UpdateAuthor(ctx context.Context, inp UpdateAuthorInp) (*Author, error)
 	AddBookToInventory(ctx context.Context, inp AddBookToInventoryInp) (*Book, error)
@@ -167,7 +167,7 @@ type MutationResolver interface {
 	IssueBook(ctx context.Context, inp IssueBook) (*IssueInfo, error)
 	ReturnBook(ctx context.Context, inp ReturnBook) (*IssueInfo, error)
 	RenewBook(ctx context.Context, inp RenewBook) (*IssueInfo, error)
-	AddPublisher(ctx context.Context, inp AddPublisher) (*Publisher, error)
+	AddPublisher(ctx context.Context, inp AddPublisherInp) (*Publisher, error)
 	RemovePublisher(ctx context.Context, id string) (*string, error)
 	UpdatePublisher(ctx context.Context, inp UpdatePublisherInp) (*Publisher, error)
 	ResolveFine(ctx context.Context, prn string) (*User, error)
@@ -384,7 +384,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddAuthor(childComplexity, args["inp"].(AddAuthor)), true
+		return e.complexity.Mutation.AddAuthor(childComplexity, args["inp"].(AddAuthorInp)), true
 
 	case "Mutation.addBookToInventory":
 		if e.complexity.Mutation.AddBookToInventory == nil {
@@ -408,7 +408,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddPublisher(childComplexity, args["inp"].(AddPublisher)), true
+		return e.complexity.Mutation.AddPublisher(childComplexity, args["inp"].(AddPublisherInp)), true
 
 	case "Mutation.createBookMeta":
 		if e.complexity.Mutation.CreateBookMeta == nil {
@@ -739,9 +739,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputAddAuthor,
+		ec.unmarshalInputAddAuthorInp,
 		ec.unmarshalInputAddBookToInventoryInp,
-		ec.unmarshalInputAddPublisher,
+		ec.unmarshalInputAddPublisherInp,
 		ec.unmarshalInputCreateBookMetaInp,
 		ec.unmarshalInputIssueBook,
 		ec.unmarshalInputRenewBook,
@@ -889,10 +889,10 @@ func (ec *executionContext) dir_isKind_args(ctx context.Context, rawArgs map[str
 func (ec *executionContext) field_Mutation_addAuthor_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 AddAuthor
+	var arg0 AddAuthorInp
 	if tmp, ok := rawArgs["inp"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("inp"))
-		arg0, err = ec.unmarshalNAddAuthor2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐAddAuthor(ctx, tmp)
+		arg0, err = ec.unmarshalNAddAuthorInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐAddAuthorInp(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -919,10 +919,10 @@ func (ec *executionContext) field_Mutation_addBookToInventory_args(ctx context.C
 func (ec *executionContext) field_Mutation_addPublisher_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 AddPublisher
+	var arg0 AddPublisherInp
 	if tmp, ok := rawArgs["inp"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("inp"))
-		arg0, err = ec.unmarshalNAddPublisher2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐAddPublisher(ctx, tmp)
+		arg0, err = ec.unmarshalNAddPublisherInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐAddPublisherInp(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2380,8 +2380,32 @@ func (ec *executionContext) _Mutation_addAuthor(ctx context.Context, field graph
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddAuthor(rctx, fc.Args["inp"].(AddAuthor))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().AddAuthor(rctx, fc.Args["inp"].(AddAuthorInp))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Author); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.Author`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2440,8 +2464,32 @@ func (ec *executionContext) _Mutation_removeAuthor(ctx context.Context, field gr
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RemoveAuthor(rctx, fc.Args["id"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RemoveAuthor(rctx, fc.Args["id"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2492,8 +2540,32 @@ func (ec *executionContext) _Mutation_updateAuthor(ctx context.Context, field gr
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateAuthor(rctx, fc.Args["inp"].(UpdateAuthorInp))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateAuthor(rctx, fc.Args["inp"].(UpdateAuthorInp))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Author); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.Author`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2552,8 +2624,32 @@ func (ec *executionContext) _Mutation_addBookToInventory(ctx context.Context, fi
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddBookToInventory(rctx, fc.Args["inp"].(AddBookToInventoryInp))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().AddBookToInventory(rctx, fc.Args["inp"].(AddBookToInventoryInp))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Book); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.Book`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2614,8 +2710,32 @@ func (ec *executionContext) _Mutation_removeBookFromInventory(ctx context.Contex
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RemoveBookFromInventory(rctx, fc.Args["id"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RemoveBookFromInventory(rctx, fc.Args["id"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2666,8 +2786,32 @@ func (ec *executionContext) _Mutation_createBookMeta(ctx context.Context, field 
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateBookMeta(rctx, fc.Args["inp"].(CreateBookMetaInp))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateBookMeta(rctx, fc.Args["inp"].(CreateBookMetaInp))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*BookMetadata); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.BookMetadata`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2736,8 +2880,32 @@ func (ec *executionContext) _Mutation_removeBookMeta(ctx context.Context, field 
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RemoveBookMeta(rctx, fc.Args["id"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RemoveBookMeta(rctx, fc.Args["id"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2788,8 +2956,32 @@ func (ec *executionContext) _Mutation_updateBookMeta(ctx context.Context, field 
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateBookMeta(rctx, fc.Args["inp"].(UpdateBookMetaInp))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateBookMeta(rctx, fc.Args["inp"].(UpdateBookMetaInp))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*BookMetadata); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.BookMetadata`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2858,8 +3050,32 @@ func (ec *executionContext) _Mutation_issueBook(ctx context.Context, field graph
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().IssueBook(rctx, fc.Args["inp"].(IssueBook))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().IssueBook(rctx, fc.Args["inp"].(IssueBook))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*IssueInfo); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.IssueInfo`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2928,8 +3144,32 @@ func (ec *executionContext) _Mutation_returnBook(ctx context.Context, field grap
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ReturnBook(rctx, fc.Args["inp"].(ReturnBook))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ReturnBook(rctx, fc.Args["inp"].(ReturnBook))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*IssueInfo); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.IssueInfo`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2998,8 +3238,32 @@ func (ec *executionContext) _Mutation_renewBook(ctx context.Context, field graph
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RenewBook(rctx, fc.Args["inp"].(RenewBook))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RenewBook(rctx, fc.Args["inp"].(RenewBook))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*IssueInfo); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.IssueInfo`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3068,8 +3332,32 @@ func (ec *executionContext) _Mutation_addPublisher(ctx context.Context, field gr
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddPublisher(rctx, fc.Args["inp"].(AddPublisher))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().AddPublisher(rctx, fc.Args["inp"].(AddPublisherInp))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Publisher); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.Publisher`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3128,8 +3416,32 @@ func (ec *executionContext) _Mutation_removePublisher(ctx context.Context, field
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().RemovePublisher(rctx, fc.Args["id"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RemovePublisher(rctx, fc.Args["id"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *string`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3180,8 +3492,32 @@ func (ec *executionContext) _Mutation_updatePublisher(ctx context.Context, field
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdatePublisher(rctx, fc.Args["inp"].(UpdatePublisherInp))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdatePublisher(rctx, fc.Args["inp"].(UpdatePublisherInp))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Publisher); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.Publisher`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3240,8 +3576,32 @@ func (ec *executionContext) _Mutation_resolveFine(ctx context.Context, field gra
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().ResolveFine(rctx, fc.Args["prn"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().ResolveFine(rctx, fc.Args["prn"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*User); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.User`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6373,8 +6733,8 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputAddAuthor(ctx context.Context, obj interface{}) (AddAuthor, error) {
-	var it AddAuthor
+func (ec *executionContext) unmarshalInputAddAuthorInp(ctx context.Context, obj interface{}) (AddAuthorInp, error) {
+	var it AddAuthorInp
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -6427,8 +6787,8 @@ func (ec *executionContext) unmarshalInputAddBookToInventoryInp(ctx context.Cont
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputAddPublisher(ctx context.Context, obj interface{}) (AddPublisher, error) {
-	var it AddPublisher
+func (ec *executionContext) unmarshalInputAddPublisherInp(ctx context.Context, obj interface{}) (AddPublisherInp, error) {
+	var it AddPublisherInp
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -8106,8 +8466,8 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) unmarshalNAddAuthor2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐAddAuthor(ctx context.Context, v interface{}) (AddAuthor, error) {
-	res, err := ec.unmarshalInputAddAuthor(ctx, v)
+func (ec *executionContext) unmarshalNAddAuthorInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐAddAuthorInp(ctx context.Context, v interface{}) (AddAuthorInp, error) {
+	res, err := ec.unmarshalInputAddAuthorInp(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -8116,8 +8476,8 @@ func (ec *executionContext) unmarshalNAddBookToInventoryInp2githubᚗcomᚋPICT�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNAddPublisher2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐAddPublisher(ctx context.Context, v interface{}) (AddPublisher, error) {
-	res, err := ec.unmarshalInputAddPublisher(ctx, v)
+func (ec *executionContext) unmarshalNAddPublisherInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐAddPublisherInp(ctx context.Context, v interface{}) (AddPublisherInp, error) {
+	res, err := ec.unmarshalInputAddPublisherInp(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

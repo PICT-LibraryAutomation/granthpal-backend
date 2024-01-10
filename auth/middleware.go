@@ -34,6 +34,7 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 			}
 
 			if time.Now().After(session.Expiry) {
+				sm.DeleteSession(cookie.Value)
 				http.SetCookie(w, &http.Cookie{
 					Name:     sessions.AUTH_SESSION_COOKIE,
 					Value:    "",
@@ -47,7 +48,7 @@ func AuthMiddleware() func(http.Handler) http.Handler {
 			}
 
 			var user models.User
-			if err := db.First(&user, "prn = ?", session.UserID); err != nil {
+			if err := db.First(&user, "prn = ?", session.UserID).Error; err != nil {
 				sm.DeleteSession(cookie.Value)
 				http.SetCookie(w, &http.Cookie{
 					Name:     sessions.AUTH_SESSION_COOKIE,

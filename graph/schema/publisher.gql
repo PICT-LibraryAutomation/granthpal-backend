@@ -5,9 +5,9 @@ extend type Query {
 }
 
 extend type Mutation {
-  addPublisher(inp: AddPublisher!): Publisher,
-  removePublisher(id: String!): String,
-  updatePublisher(inp: UpdatePublisherInp!): Publisher,
+  addPublisher(inp: AddPublisherInp!): Publisher @isKind(kind: LIBRARY_STAFF),
+  removePublisher(id: String!): String @isKind(kind: LIBRARY_STAFF),
+  updatePublisher(inp: UpdatePublisherInp!): Publisher @isKind(kind: LIBRARY_STAFF),
 }
 
 type Publisher {
@@ -16,7 +16,7 @@ type Publisher {
   books: [BookMetadata!]!,
 }
 
-input AddPublisher {
+input AddPublisherInp {
   name: String!,
 }
 

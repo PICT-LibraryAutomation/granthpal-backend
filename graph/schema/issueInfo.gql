@@ -5,9 +5,9 @@ extend type Query {
 }
 
 extend type Mutation {
-  issueBook(inp: IssueBook!): IssueInfo,
-  returnBook(inp: ReturnBook!): IssueInfo,
-  renewBook(inp: RenewBook!): IssueInfo,
+  issueBook(inp: IssueBook!): IssueInfo @isKind(kind: LIBRARY_STAFF),
+  returnBook(inp: ReturnBook!): IssueInfo @isKind(kind: LIBRARY_STAFF),
+  renewBook(inp: RenewBook!): IssueInfo @isKind(kind: LIBRARY_STAFF),
 }
 
 type IssueInfo {

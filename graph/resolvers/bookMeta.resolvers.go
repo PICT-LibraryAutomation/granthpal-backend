@@ -17,7 +17,7 @@ import (
 // Authors is the resolver for the authors field.
 func (r *bookMetadataResolver) Authors(ctx context.Context, obj *graph.BookMetadata) ([]*graph.Author, error) {
 	var authors []models.Author
-	err := r.DB.Model(&models.BookMetadata{}).Where("id = ?", obj.ID).Association("Authors").Find(&authors)
+	err := r.DB.Model(&models.BookMetadata{ID: obj.ID}).Association("Authors").Find(&authors)
 	if err != nil {
 		return nil, err
 	}
