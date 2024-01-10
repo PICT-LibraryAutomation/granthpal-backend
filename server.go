@@ -5,8 +5,10 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/PICT-LibraryAutomation/granthpal/auth"
 	"github.com/PICT-LibraryAutomation/granthpal/database"
 	"github.com/PICT-LibraryAutomation/granthpal/routes"
+	"github.com/PICT-LibraryAutomation/granthpal/sessions"
 	"github.com/PICT-LibraryAutomation/granthpal/utils"
 	"github.com/go-chi/chi/v5"
 	"github.com/joho/godotenv"
@@ -34,9 +36,13 @@ func main() {
 		log.Fatal(err)
 	}
 
+	sm := sessions.NewSessionManager(sugar)
+
 	router := chi.NewRouter()
 	router.Use(utils.LoggerMiddleware(sugar))
 	router.Use(database.DatabaseMiddleware(db))
+	router.Use(sessions.SessionsMiddleware(sm))
+	router.Use(auth.AuthMiddleware())
 
 	router.Mount("/", routes.GraphQLRouter(db, sugar))
 
