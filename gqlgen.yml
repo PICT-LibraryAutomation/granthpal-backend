@@ -79,6 +79,8 @@ models:
         resolver: true
       publisher:
         resolver: true
+      tags:
+        resolver: true
   IssueInfo:
     fields:
       book:
@@ -98,4 +100,8 @@ models:
   Publisher:
     fields:
       books:
+        resolver: true
+  Tag:
+    fields:
+      bookMetas:
         resolver: true

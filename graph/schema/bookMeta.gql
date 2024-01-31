@@ -19,6 +19,7 @@ type BookMetadata {
   publisherID: String!,
   publisher: Publisher!,
   books: [Book!]!,
+  tags: [Tag!]!,
 }
 
 input CreateBookMetaInp {
@@ -27,6 +28,7 @@ input CreateBookMetaInp {
   ISBN: String!,
   authorIDs: [String!]!,
   publisherID: String!,
+  tagIDs: [String!]!,
 }
 
 input UpdateBookMetaInp {

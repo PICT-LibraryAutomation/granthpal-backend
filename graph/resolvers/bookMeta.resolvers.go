@@ -37,6 +37,19 @@ func (r *bookMetadataResolver) Publisher(ctx context.Context, obj *graph.BookMet
 	return publisher.ToGraphModel(), nil
 }
 
+// Tags is the resolver for the tags field.
+func (r *bookMetadataResolver) Tags(ctx context.Context, obj *graph.BookMetadata) ([]*graph.Tag, error) {
+	var tags []models.Tag
+	err := r.DB.Model(&models.BookMetadata{ID: obj.ID}).Association("Tags").Find(&tags)
+	if err != nil {
+		return nil, err
+	}
+
+	return utils.Map(tags, func(tag models.Tag) *graph.Tag {
+		return tag.ToGraphModel()
+	}), nil
+}
+
 // CreateBookMeta is the resolver for the createBookMeta field.
 func (r *mutationResolver) CreateBookMeta(ctx context.Context, inp graph.CreateBookMetaInp) (*graph.BookMetadata, error) {
 	bookMeta := models.BookMetadata{
@@ -47,6 +60,9 @@ func (r *mutationResolver) CreateBookMeta(ctx context.Context, inp graph.CreateB
 		PublisherID: inp.PublisherID,
 		Authors: utils.Map(inp.AuthorIDs, func(id string) models.Author {
 			return models.Author{ID: id}
+		}),
+		Tags: utils.Map(inp.TagIDs, func(id string) models.Tag {
+			return models.Tag{ID: id}
 		}),
 	}
 	if err := r.DB.Create(&bookMeta).Error; err != nil {

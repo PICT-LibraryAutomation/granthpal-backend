@@ -46,6 +46,7 @@ type ResolverRoot interface {
 	Mutation() MutationResolver
 	Publisher() PublisherResolver
 	Query() QueryResolver
+	Tag() TagResolver
 	User() UserResolver
 }
 
@@ -77,6 +78,7 @@ type ComplexityRoot struct {
 		Name        func(childComplexity int) int
 		Publisher   func(childComplexity int) int
 		PublisherID func(childComplexity int) int
+		Tags        func(childComplexity int) int
 	}
 
 	IssueInfo struct {
@@ -95,11 +97,13 @@ type ComplexityRoot struct {
 		AddBookToInventory      func(childComplexity int, inp AddBookToInventoryInp) int
 		AddPublisher            func(childComplexity int, inp AddPublisherInp) int
 		CreateBookMeta          func(childComplexity int, inp CreateBookMetaInp) int
+		CreateTag               func(childComplexity int, inp CreateTagInp) int
 		IssueBook               func(childComplexity int, inp IssueBook) int
 		RemoveAuthor            func(childComplexity int, id string) int
 		RemoveBookFromInventory func(childComplexity int, id string) int
 		RemoveBookMeta          func(childComplexity int, id string) int
 		RemovePublisher         func(childComplexity int, id string) int
+		RemoveTag               func(childComplexity int, inp RemoveTagInp) int
 		RenewBook               func(childComplexity int, inp RenewBook) int
 		ResolveFine             func(childComplexity int, prn string) int
 		ReturnBook              func(childComplexity int, inp ReturnBook) int
@@ -125,8 +129,16 @@ type ComplexityRoot struct {
 		IssueInfos func(childComplexity int) int
 		Publisher  func(childComplexity int, id string) int
 		Publishers func(childComplexity int) int
+		Tag        func(childComplexity int, id string) int
+		Tags       func(childComplexity int) int
 		User       func(childComplexity int, prn string) int
 		Users      func(childComplexity int) int
+	}
+
+	Tag struct {
+		BookMetas func(childComplexity int) int
+		ID        func(childComplexity int) int
+		Name      func(childComplexity int) int
 	}
 
 	User struct {
@@ -149,6 +161,8 @@ type BookMetadataResolver interface {
 	Authors(ctx context.Context, obj *BookMetadata) ([]*Author, error)
 
 	Publisher(ctx context.Context, obj *BookMetadata) (*Publisher, error)
+
+	Tags(ctx context.Context, obj *BookMetadata) ([]*Tag, error)
 }
 type IssueInfoResolver interface {
 	Book(ctx context.Context, obj *IssueInfo) (*Book, error)
@@ -170,6 +184,8 @@ type MutationResolver interface {
 	AddPublisher(ctx context.Context, inp AddPublisherInp) (*Publisher, error)
 	RemovePublisher(ctx context.Context, id string) (*string, error)
 	UpdatePublisher(ctx context.Context, inp UpdatePublisherInp) (*Publisher, error)
+	CreateTag(ctx context.Context, inp CreateTagInp) (*Tag, error)
+	RemoveTag(ctx context.Context, inp RemoveTagInp) (*string, error)
 	ResolveFine(ctx context.Context, prn string) (*User, error)
 }
 type PublisherResolver interface {
@@ -186,8 +202,13 @@ type QueryResolver interface {
 	IssueInfos(ctx context.Context) ([]*IssueInfo, error)
 	Publisher(ctx context.Context, id string) (*Publisher, error)
 	Publishers(ctx context.Context) ([]*Publisher, error)
+	Tag(ctx context.Context, id string) (*Tag, error)
+	Tags(ctx context.Context) ([]*Tag, error)
 	User(ctx context.Context, prn string) (*User, error)
 	Users(ctx context.Context) ([]*User, error)
+}
+type TagResolver interface {
+	BookMetas(ctx context.Context, obj *Tag) ([]*BookMetadata, error)
 }
 type UserResolver interface {
 	Issuing(ctx context.Context, obj *User) ([]*IssueInfo, error)
@@ -318,6 +339,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.BookMetadata.PublisherID(childComplexity), true
 
+	case "BookMetadata.tags":
+		if e.complexity.BookMetadata.Tags == nil {
+			break
+		}
+
+		return e.complexity.BookMetadata.Tags(childComplexity), true
+
 	case "IssueInfo.book":
 		if e.complexity.IssueInfo.Book == nil {
 			break
@@ -422,6 +450,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateBookMeta(childComplexity, args["inp"].(CreateBookMetaInp)), true
 
+	case "Mutation.createTag":
+		if e.complexity.Mutation.CreateTag == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTag_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTag(childComplexity, args["inp"].(CreateTagInp)), true
+
 	case "Mutation.issueBook":
 		if e.complexity.Mutation.IssueBook == nil {
 			break
@@ -481,6 +521,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RemovePublisher(childComplexity, args["id"].(string)), true
+
+	case "Mutation.removeTag":
+		if e.complexity.Mutation.RemoveTag == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_removeTag_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RemoveTag(childComplexity, args["inp"].(RemoveTagInp)), true
 
 	case "Mutation.renewBook":
 		if e.complexity.Mutation.RenewBook == nil {
@@ -670,6 +722,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Publishers(childComplexity), true
 
+	case "Query.tag":
+		if e.complexity.Query.Tag == nil {
+			break
+		}
+
+		args, err := ec.field_Query_tag_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Tag(childComplexity, args["id"].(string)), true
+
+	case "Query.tags":
+		if e.complexity.Query.Tags == nil {
+			break
+		}
+
+		return e.complexity.Query.Tags(childComplexity), true
+
 	case "Query.user":
 		if e.complexity.Query.User == nil {
 			break
@@ -688,6 +759,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Users(childComplexity), true
+
+	case "Tag.bookMetas":
+		if e.complexity.Tag.BookMetas == nil {
+			break
+		}
+
+		return e.complexity.Tag.BookMetas(childComplexity), true
+
+	case "Tag.id":
+		if e.complexity.Tag.ID == nil {
+			break
+		}
+
+		return e.complexity.Tag.ID(childComplexity), true
+
+	case "Tag.name":
+		if e.complexity.Tag.Name == nil {
+			break
+		}
+
+		return e.complexity.Tag.Name(childComplexity), true
 
 	case "User.allIssued":
 		if e.complexity.User.AllIssued == nil {
@@ -743,7 +835,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputAddBookToInventoryInp,
 		ec.unmarshalInputAddPublisherInp,
 		ec.unmarshalInputCreateBookMetaInp,
+		ec.unmarshalInputCreateTagInp,
 		ec.unmarshalInputIssueBook,
+		ec.unmarshalInputRemoveTagInp,
 		ec.unmarshalInputRenewBook,
 		ec.unmarshalInputReturnBook,
 		ec.unmarshalInputUpdateAuthorInp,
@@ -845,7 +939,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
-//go:embed "schema/author.gql" "schema/book.gql" "schema/bookMeta.gql" "schema/issueInfo.gql" "schema/publisher.gql" "schema/schema.gql" "schema/user.gql"
+//go:embed "schema/author.gql" "schema/book.gql" "schema/bookMeta.gql" "schema/issueInfo.gql" "schema/publisher.gql" "schema/schema.gql" "schema/tag.gql" "schema/user.gql"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -863,6 +957,7 @@ var sources = []*ast.Source{
 	{Name: "schema/issueInfo.gql", Input: sourceData("schema/issueInfo.gql"), BuiltIn: false},
 	{Name: "schema/publisher.gql", Input: sourceData("schema/publisher.gql"), BuiltIn: false},
 	{Name: "schema/schema.gql", Input: sourceData("schema/schema.gql"), BuiltIn: false},
+	{Name: "schema/tag.gql", Input: sourceData("schema/tag.gql"), BuiltIn: false},
 	{Name: "schema/user.gql", Input: sourceData("schema/user.gql"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -946,6 +1041,21 @@ func (ec *executionContext) field_Mutation_createBookMeta_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createTag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 CreateTagInp
+	if tmp, ok := rawArgs["inp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("inp"))
+		arg0, err = ec.unmarshalNCreateTagInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐCreateTagInp(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["inp"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_issueBook_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1018,6 +1128,21 @@ func (ec *executionContext) field_Mutation_removePublisher_args(ctx context.Cont
 		}
 	}
 	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_removeTag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 RemoveTagInp
+	if tmp, ok := rawArgs["inp"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("inp"))
+		arg0, err = ec.unmarshalNRemoveTagInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐRemoveTagInp(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["inp"] = arg0
 	return args, nil
 }
 
@@ -1187,6 +1312,21 @@ func (ec *executionContext) field_Query_issueInfo_args(ctx context.Context, rawA
 }
 
 func (ec *executionContext) field_Query_publisher_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_tag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -1397,6 +1537,8 @@ func (ec *executionContext) fieldContext_Author_books(ctx context.Context, field
 				return ec.fieldContext_BookMetadata_publisher(ctx, field)
 			case "books":
 				return ec.fieldContext_BookMetadata_books(ctx, field)
+			case "tags":
+				return ec.fieldContext_BookMetadata_tags(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
 		},
@@ -1547,6 +1689,8 @@ func (ec *executionContext) fieldContext_Book_meta(ctx context.Context, field gr
 				return ec.fieldContext_BookMetadata_publisher(ctx, field)
 			case "books":
 				return ec.fieldContext_BookMetadata_books(ctx, field)
+			case "tags":
+				return ec.fieldContext_BookMetadata_tags(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
 		},
@@ -1986,6 +2130,58 @@ func (ec *executionContext) fieldContext_BookMetadata_books(ctx context.Context,
 				return ec.fieldContext_Book_issueInfo(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Book", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookMetadata_tags(ctx context.Context, field graphql.CollectedField, obj *BookMetadata) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookMetadata_tags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.BookMetadata().Tags(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Tag)
+	fc.Result = res
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐTagᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookMetadata_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookMetadata",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tag_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Tag_name(ctx, field)
+			case "bookMetas":
+				return ec.fieldContext_Tag_bookMetas(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
 		},
 	}
 	return fc, nil
@@ -2849,6 +3045,8 @@ func (ec *executionContext) fieldContext_Mutation_createBookMeta(ctx context.Con
 				return ec.fieldContext_BookMetadata_publisher(ctx, field)
 			case "books":
 				return ec.fieldContext_BookMetadata_books(ctx, field)
+			case "tags":
+				return ec.fieldContext_BookMetadata_tags(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
 		},
@@ -3019,6 +3217,8 @@ func (ec *executionContext) fieldContext_Mutation_updateBookMeta(ctx context.Con
 				return ec.fieldContext_BookMetadata_publisher(ctx, field)
 			case "books":
 				return ec.fieldContext_BookMetadata_books(ctx, field)
+			case "tags":
+				return ec.fieldContext_BookMetadata_tags(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
 		},
@@ -3563,6 +3763,166 @@ func (ec *executionContext) fieldContext_Mutation_updatePublisher(ctx context.Co
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createTag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createTag(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateTag(rctx, fc.Args["inp"].(CreateTagInp))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*Tag); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/PICT-LibraryAutomation/granthpal/graph.Tag`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Tag)
+	fc.Result = res
+	return ec.marshalOTag2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐTag(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createTag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tag_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Tag_name(ctx, field)
+			case "bookMetas":
+				return ec.fieldContext_Tag_bookMetas(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createTag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_removeTag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_removeTag(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RemoveTag(rctx, fc.Args["inp"].(RemoveTagInp))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			kind, err := ec.unmarshalNUserKind2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUserKind(ctx, "LIBRARY_STAFF")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.IsKind == nil {
+				return nil, errors.New("directive isKind is not implemented")
+			}
+			return ec.directives.IsKind(ctx, nil, directive0, kind)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*string); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *string`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_removeTag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_removeTag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_resolveFine(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_resolveFine(ctx, field)
 	if err != nil {
@@ -3796,6 +4156,8 @@ func (ec *executionContext) fieldContext_Publisher_books(ctx context.Context, fi
 				return ec.fieldContext_BookMetadata_publisher(ctx, field)
 			case "books":
 				return ec.fieldContext_BookMetadata_books(ctx, field)
+			case "tags":
+				return ec.fieldContext_BookMetadata_tags(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
 		},
@@ -4083,6 +4445,8 @@ func (ec *executionContext) fieldContext_Query_bookMeta(ctx context.Context, fie
 				return ec.fieldContext_BookMetadata_publisher(ctx, field)
 			case "books":
 				return ec.fieldContext_BookMetadata_books(ctx, field)
+			case "tags":
+				return ec.fieldContext_BookMetadata_tags(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
 		},
@@ -4156,6 +4520,8 @@ func (ec *executionContext) fieldContext_Query_bookMetas(ctx context.Context, fi
 				return ec.fieldContext_BookMetadata_publisher(ctx, field)
 			case "books":
 				return ec.fieldContext_BookMetadata_books(ctx, field)
+			case "tags":
+				return ec.fieldContext_BookMetadata_tags(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
 		},
@@ -4402,6 +4768,118 @@ func (ec *executionContext) fieldContext_Query_publishers(ctx context.Context, f
 				return ec.fieldContext_Publisher_books(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Publisher", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_tag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_tag(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Tag(rctx, fc.Args["id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*Tag)
+	fc.Result = res
+	return ec.marshalOTag2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐTag(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_tag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tag_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Tag_name(ctx, field)
+			case "bookMetas":
+				return ec.fieldContext_Tag_bookMetas(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_tag_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_tags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_tags(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Tags(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*Tag)
+	fc.Result = res
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐTagᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tag_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Tag_name(ctx, field)
+			case "bookMetas":
+				return ec.fieldContext_Tag_bookMetas(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
 		},
 	}
 	return fc, nil
@@ -4655,6 +5133,158 @@ func (ec *executionContext) fieldContext_Query___schema(ctx context.Context, fie
 				return ec.fieldContext___Schema_directives(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type __Schema", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tag_id(ctx context.Context, field graphql.CollectedField, obj *Tag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tag_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tag_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tag_name(ctx context.Context, field graphql.CollectedField, obj *Tag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tag_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tag_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tag_bookMetas(ctx context.Context, field graphql.CollectedField, obj *Tag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tag_bookMetas(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tag().BookMetas(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*BookMetadata)
+	fc.Result = res
+	return ec.marshalNBookMetadata2ᚕᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐBookMetadataᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tag_bookMetas(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_BookMetadata_id(ctx, field)
+			case "name":
+				return ec.fieldContext_BookMetadata_name(ctx, field)
+			case "abstract":
+				return ec.fieldContext_BookMetadata_abstract(ctx, field)
+			case "ISBN":
+				return ec.fieldContext_BookMetadata_ISBN(ctx, field)
+			case "authors":
+				return ec.fieldContext_BookMetadata_authors(ctx, field)
+			case "publisherID":
+				return ec.fieldContext_BookMetadata_publisherID(ctx, field)
+			case "publisher":
+				return ec.fieldContext_BookMetadata_publisher(ctx, field)
+			case "books":
+				return ec.fieldContext_BookMetadata_books(ctx, field)
+			case "tags":
+				return ec.fieldContext_BookMetadata_tags(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookMetadata", field.Name)
 		},
 	}
 	return fc, nil
@@ -6821,7 +7451,7 @@ func (ec *executionContext) unmarshalInputCreateBookMetaInp(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "abstract", "ISBN", "authorIDs", "publisherID"}
+	fieldsInOrder := [...]string{"name", "abstract", "ISBN", "authorIDs", "publisherID", "tagIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -6863,6 +7493,40 @@ func (ec *executionContext) unmarshalInputCreateBookMetaInp(ctx context.Context,
 				return it, err
 			}
 			it.PublisherID = data
+		case "tagIDs":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tagIDs"))
+			data, err := ec.unmarshalNString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TagIDs = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateTagInp(ctx context.Context, obj interface{}) (CreateTagInp, error) {
+	var it CreateTagInp
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
 		}
 	}
 
@@ -6904,6 +7568,33 @@ func (ec *executionContext) unmarshalInputIssueBook(ctx context.Context, obj int
 				return it, err
 			}
 			it.ReturnDate = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputRemoveTagInp(ctx context.Context, obj interface{}) (RemoveTagInp, error) {
+	var it RemoveTagInp
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"ID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "ID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ID"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
 		}
 	}
 
@@ -7377,6 +8068,42 @@ func (ec *executionContext) _BookMetadata(ctx context.Context, sel ast.Selection
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
+		case "tags":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._BookMetadata_tags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -7610,6 +8337,14 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "updatePublisher":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updatePublisher(ctx, field)
+			})
+		case "createTag":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createTag(ctx, field)
+			})
+		case "removeTag":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_removeTag(ctx, field)
 			})
 		case "resolveFine":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -7942,6 +8677,47 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "tag":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_tag(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "tags":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_tags(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "user":
 			field := field
 
@@ -7991,6 +8767,86 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Query___schema(ctx, field)
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var tagImplementors = []string{"Tag"}
+
+func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj *Tag) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, tagImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Tag")
+		case "id":
+			out.Values[i] = ec._Tag_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "name":
+			out.Values[i] = ec._Tag_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
+		case "bookMetas":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tag_bookMetas(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -8671,6 +9527,11 @@ func (ec *executionContext) unmarshalNCreateBookMetaInp2githubᚗcomᚋPICTᚑLi
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateTagInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐCreateTagInp(ctx context.Context, v interface{}) (CreateTagInp, error) {
+	res, err := ec.unmarshalInputCreateTagInp(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8813,6 +9674,11 @@ func (ec *executionContext) marshalNPublisher2ᚖgithubᚗcomᚋPICTᚑLibraryAu
 	return ec._Publisher(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNRemoveTagInp2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐRemoveTagInp(ctx context.Context, v interface{}) (RemoveTagInp, error) {
+	res, err := ec.unmarshalInputRemoveTagInp(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNRenewBook2githubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐRenewBook(ctx context.Context, v interface{}) (RenewBook, error) {
 	res, err := ec.unmarshalInputRenewBook(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -8868,6 +9734,60 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*Tag) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNTag2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐTag(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐTag(ctx context.Context, sel ast.SelectionSet, v *Tag) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Tag(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
@@ -9296,6 +10216,13 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	}
 	res := graphql.MarshalString(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOTag2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐTag(ctx context.Context, sel ast.SelectionSet, v *Tag) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Tag(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋPICTᚑLibraryAutomationᚋgranthpalᚋgraphᚐUser(ctx context.Context, sel ast.SelectionSet, v *User) graphql.Marshaler {

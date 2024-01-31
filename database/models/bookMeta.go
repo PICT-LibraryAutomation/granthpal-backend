@@ -11,6 +11,7 @@ type BookMetadata struct {
 	ISBN        string
 	PublisherID string
 	Authors     []Author `gorm:"many2many:book_authors"`
+	Tags        []Tag    `gorm:"many2many:tag_book_metas"`
 }
 
 func (t *BookMetadata) ToGraphModel() *graph.BookMetadata {

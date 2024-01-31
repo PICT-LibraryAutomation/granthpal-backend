@@ -27,6 +27,7 @@ func NewDatabase(logger *zap.SugaredLogger) (*gorm.DB, error) {
 	db.AutoMigrate(&models.Author{})
 	db.AutoMigrate(&models.Publisher{})
 	db.AutoMigrate(&models.IssueInfo{})
+	db.AutoMigrate(&models.Tag{})
 
 	return db, nil
 }

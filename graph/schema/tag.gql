@@ -1,0 +1,24 @@
+
+extend type Query {
+  tag(id: String!): Tag,
+  tags: [Tag!]!,
+}
+
+extend type Mutation {
+  createTag(inp: CreateTagInp!): Tag @isKind(kind: LIBRARY_STAFF),
+  removeTag(inp: RemoveTagInp!): String @isKind(kind: LIBRARY_STAFF),
+}
+
+type Tag {
+  id: String!,
+  name: String!,
+  bookMetas: [BookMetadata!]!,
+}
+
+input CreateTagInp {
+  name: String!,
+}
+
+input RemoveTagInp {
+  ID: String!,
+}

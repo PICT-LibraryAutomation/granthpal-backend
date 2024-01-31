@@ -43,6 +43,7 @@ type BookMetadata struct {
 	PublisherID string     `json:"publisherID"`
 	Publisher   *Publisher `json:"publisher"`
 	Books       []*Book    `json:"books"`
+	Tags        []*Tag     `json:"tags"`
 }
 
 type CreateBookMetaInp struct {
@@ -51,6 +52,11 @@ type CreateBookMetaInp struct {
 	Isbn        string   `json:"ISBN"`
 	AuthorIDs   []string `json:"authorIDs"`
 	PublisherID string   `json:"publisherID"`
+	TagIDs      []string `json:"tagIDs"`
+}
+
+type CreateTagInp struct {
+	Name string `json:"name"`
 }
 
 type IssueBook struct {
@@ -82,6 +88,10 @@ type Publisher struct {
 type Query struct {
 }
 
+type RemoveTagInp struct {
+	ID string `json:"ID"`
+}
+
 type RenewBook struct {
 	ID         string    `json:"id"`
 	ReturnDate time.Time `json:"returnDate"`
@@ -89,6 +99,12 @@ type RenewBook struct {
 
 type ReturnBook struct {
 	ID string `json:"id"`
+}
+
+type Tag struct {
+	ID        string          `json:"id"`
+	Name      string          `json:"name"`
+	BookMetas []*BookMetadata `json:"bookMetas"`
 }
 
 type UpdateAuthorInp struct {
